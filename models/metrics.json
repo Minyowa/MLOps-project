@@ -1,0 +1,99 @@
+{
+  "dataset": "Loghub OpenSSH (real sshd log, LabSZ, 2015-12-10 ~ 2016-01-07)",
+  "task": "10분 윈도우(성공·실패 모두) 후 1시간 안에 같은 IP가 다시 와서 로그인 실패를 일으키는가",
+  "best_model": "logistic_regression",
+  "feature_names": [
+    "n_attempts",
+    "fail_ratio",
+    "n_unique_users",
+    "invalid_user_ratio",
+    "privileged_user_ratio",
+    "password_ratio",
+    "mean_interval_s",
+    "interval_cv",
+    "success_after_fails",
+    "hist_windows_24h",
+    "hist_log_fails"
+  ],
+  "cv_accuracy": {
+    "baseline_majority": {
+      "mean": 0.5746,
+      "std": 0.1609,
+      "folds": [
+        0.6698,
+        0.7856,
+        0.3824,
+        0.4607
+      ]
+    },
+    "baseline_rule_20fails": {
+      "mean": 0.816,
+      "std": 0.0889,
+      "folds": [
+        0.7106,
+        0.7486,
+        0.925,
+        0.8796
+      ]
+    },
+    "logistic_regression": {
+      "mean": 0.9225,
+      "std": 0.0339,
+      "folds": [
+        0.8653,
+        0.9307,
+        0.9526,
+        0.9412
+      ]
+    },
+    "random_forest": {
+      "mean": 0.9051,
+      "std": 0.0685,
+      "folds": [
+        0.7875,
+        0.9298,
+        0.9535,
+        0.9498
+      ]
+    },
+    "hist_gradient_boosting": {
+      "mean": 0.917,
+      "std": 0.0537,
+      "folds": [
+        0.8245,
+        0.9393,
+        0.9488,
+        0.9555
+      ]
+    }
+  },
+  "holdout": {
+    "accuracy": 0.9412,
+    "balanced_accuracy": 0.9425,
+    "precision": 0.9634,
+    "recall": 0.9262,
+    "f1": 0.9444,
+    "confusion_matrix": {
+      "tn": 466,
+      "fp": 20,
+      "fn": 42,
+      "tp": 527
+    },
+    "train_accuracy": 0.944,
+    "subsets": {
+      "windows_with_success": {
+        "n": 56,
+        "accuracy": 1.0
+      },
+      "windows_fail_only": {
+        "n": 999,
+        "accuracy": 0.9379
+      },
+      "known_user_block_rate": {
+        "n": 114,
+        "rate": 0.0
+      }
+    }
+  },
+  "sklearn_version": "1.9.1"
+}

@@ -1,0 +1,91 @@
+{
+  "task": "링크 하나 → 피싱/악성(1) vs 정상(0)",
+  "eval_set": "JPCERT 2024년 이후 피싱(학습에 없던 사이트) 19896 + 학습에 없던 정상 19896",
+  "selected": "D_plus_recent_phishing_and_popular_sites",
+  "model_version": "char3-5_lr@20261026-182114",
+  "results": {
+    "A_2017_only": {
+      "accuracy": 0.7884,
+      "precision": 0.7691,
+      "recall_phishing": 0.8243,
+      "f1": 0.7957,
+      "false_alarm_rate": 0.2475,
+      "confusion_matrix": {
+        "tn": 14972,
+        "fp": 4924,
+        "fn": 3496,
+        "tp": 16400
+      },
+      "train_accuracy": 0.9756,
+      "popular_site_false_alarm": 0.4584,
+      "n_train": 324091
+    },
+    "C_plus_recent_phishing": {
+      "accuracy": 0.8227,
+      "precision": 0.7621,
+      "recall_phishing": 0.9382,
+      "f1": 0.8411,
+      "false_alarm_rate": 0.2928,
+      "confusion_matrix": {
+        "tn": 14070,
+        "fp": 5826,
+        "fn": 1229,
+        "tp": 18667
+      },
+      "train_accuracy": 0.9836,
+      "popular_site_false_alarm": 0.5612,
+      "n_train": 480776
+    },
+    "D_plus_recent_phishing_and_popular_sites": {
+      "accuracy": 0.9178,
+      "precision": 0.9555,
+      "recall_phishing": 0.8764,
+      "f1": 0.9142,
+      "false_alarm_rate": 0.0408,
+      "confusion_matrix": {
+        "tn": 19084,
+        "fp": 812,
+        "fn": 2459,
+        "tp": 17437
+      },
+      "train_accuracy": 0.9766,
+      "popular_site_false_alarm": 0.0636,
+      "n_train": 560776
+    }
+  },
+  "test": {
+    "accuracy": 0.9178,
+    "precision": 0.9555,
+    "recall_phishing": 0.8764,
+    "f1": 0.9142,
+    "false_alarm_rate": 0.0408,
+    "confusion_matrix": {
+      "tn": 19084,
+      "fp": 812,
+      "fn": 2459,
+      "tp": 17437
+    },
+    "train_accuracy": 0.9766,
+    "popular_site_false_alarm": 0.0636,
+    "n_train": 560776
+  },
+  "service_with_rules": {
+    "accuracy": 0.9204,
+    "precision": 0.9614,
+    "recall_phishing": 0.876,
+    "f1": 0.9167,
+    "false_alarm_rate": 0.0352,
+    "confusion_matrix": {
+      "tn": 19196,
+      "fp": 700,
+      "fn": 2468,
+      "tp": 17428
+    },
+    "phishing_passed_by_rules": 9
+  },
+  "reputation": {
+    "top_k": 10000,
+    "n_domains": 9653
+  },
+  "sklearn_version": "1.9.1"
+}

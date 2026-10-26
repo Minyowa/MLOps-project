@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReviewPulse 검수 콘솔</title>
+<style>
+  :root {
+    --bg: #f6f5f2; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a66; --line: #e3e1db;
+    --pos: #1f7a52; --pos-bg: #e6f3ec; --neg: #b23a2b; --neg-bg: #f8e9e6;
+    --warn: #8a5a00; --warn-bg: #fbf0d9; --accent: #1d1d1b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161614; --panel: #1f1f1d; --ink: #ecebe6; --muted: #9b9a95; --line: #33322f;
+      --pos: #5fc796; --pos-bg: #183327; --neg: #f08a7b; --neg-bg: #3a1f1b;
+      --warn: #e7b553; --warn-bg: #3a2f17; --accent: #ecebe6;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.55 -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+  header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  h1 { font-size: 22px; margin: 0; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); margin: 4px 0 24px; }
+  .meta { color: var(--muted); font-size: 12px; font-family: ui-monospace, Menlo, monospace; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  label.small { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  textarea { width: 100%; min-height: 96px; resize: vertical; padding: 12px; font: inherit; color: var(--ink);
+             background: transparent; border: 1px solid var(--line); border-radius: 8px; }
+  textarea:focus, select:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  select { font: inherit; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+  button { font: inherit; cursor: pointer; border-radius: 8px; padding: 9px 16px; border: 1px solid var(--line);
+           background: var(--panel); color: var(--ink); }
+  button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+  button:disabled { opacity: .45; cursor: default; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .chip { font-size: 13px; padding: 4px 10px; border-radius: 999px; color: var(--muted); }
+  .result { display: none; }
+  .verdict { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .badge { font-weight: 700; font-size: 18px; padding: 4px 14px; border-radius: 8px; }
+  .badge.pos { color: var(--pos); background: var(--pos-bg); }
+  .badge.neg { color: var(--neg); background: var(--neg-bg); }
+  .warn { font-size: 13px; color: var(--warn); background: var(--warn-bg); padding: 3px 10px; border-radius: 6px; }
+  .bar { position: relative; height: 10px; border-radius: 999px; background: var(--neg-bg); margin: 16px 0 6px; overflow: hidden; }
+  .bar > span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--pos); }
+  .bar-legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  .fb-title { margin: 18px 0 0; font-weight: 600; }
+  .fb-done { color: var(--muted); margin-top: 10px; display: none; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat { border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  .stat b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 12px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; color: var(--muted); font-weight: 500; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .empty { color: var(--muted); font-size: 14px; }
+  h2 { font-size: 15px; margin: 0 0 12px; }
+  .err { color: var(--neg); margin-top: 10px; display: none; }
+  @media (max-width: 560px) { .stats { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>ReviewPulse 검수 콘솔</h1>
+    <span class="meta" id="model">모델 확인 중…</span>
+  </header>
+  <p class="sub">관객 댓글 한 줄을 넣으면 긍정/부정을 판정합니다. 판정이 맞았는지 눌러 주시면 정답 로그로 저장돼 모델 성능 감시에 쓰입니다.</p>
+
+  <section class="panel">
+    <label class="small" for="text">관객 댓글</label>
+    <textarea id="text" maxlength="2000" placeholder="예: 배우들 연기 미쳤다 두 번 봐도 안 아까움"></textarea>
+    <div class="chips" id="chips"></div>
+    <div class="row">
+      <select id="source" aria-label="댓글 출처">
+        <option value="community">커뮤니티</option>
+        <option value="youtube">유튜브</option>
+        <option value="news">기사 댓글</option>
+        <option value="sns">SNS</option>
+      </select>
+      <button class="primary" id="predict">판정하기</button>
+      <span class="meta">Ctrl+Enter</span>
+    </div>
+    <div class="err" id="err"></div>
+  </section>
+
+  <section class="panel result" id="result">
+    <div class="verdict">
+      <span class="badge" id="badge"></span>
+      <span id="prob"></span>
+      <span class="warn" id="review" hidden>확신이 낮아요 · 검수 권장</span>
+    </div>
+    <div class="bar"><span id="barfill"></span></div>
+    <div class="bar-legend"><span>부정</span><span>긍정</span></div>
+    <p class="fb-title">이 판정이 맞나요?</p>
+    <div class="row" id="fbrow">
+      <button id="fb-yes">맞아요</button>
+      <button id="fb-no">틀려요</button>
+    </div>
+    <div class="fb-done" id="fbdone"></div>
+  </section>
+
+  <section class="panel">
+    <h2>검수 현황 (서버 기준)</h2>
+    <div class="stats">
+      <div class="stat"><b id="s-pred">–</b><span>판정 수</span></div>
+      <div class="stat"><b id="s-fb">–</b><span>검수 수</span></div>
+      <div class="stat"><b id="s-acc">–</b><span>실제 정확도 (검수 기준)</span></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>이번 세션 기록</h2>
+    <div id="history"><p class="empty">아직 판정한 댓글이 없어요.</p></div>
+  </section>
+</main>
+
+<script>
+const SAMPLES = [
+  "배우들 연기 미쳤다 두 번 봐도 안 아까움",
+  "아 더빙.. 진짜 짜증나네요 목소리",
+  "그냥 무난했어요",
+  "스토리는 별로인데 영상미는 최고",
+  "시간 아깝다 졸다 나옴",
+];
+const $ = (id) => document.getElementById(id);
+let current = null;
+const history = [];
+
+SAMPLES.forEach((s) => {
+  const b = document.createElement("button");
+  b.className = "chip"; b.textContent = s;
+  b.onclick = () => { $("text").value = s; $("text").focus(); };
+  $("chips").appendChild(b);
+});
+
+async function api(path, body) {
+  const res = await fetch(path, body ? {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+  } : undefined);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "요청 실패 (" + res.status + ")");
+  return data;
+}
+
+function showError(msg) { $("err").textContent = msg; $("err").style.display = msg ? "block" : "none"; }
+
+async function predict() {
+  const text = $("text").value.trim();
+  if (!text) { showError("댓글을 입력해 주세요."); return; }
+  showError(""); $("predict").disabled = true;
+  try {
+    const r = await api("/v1/predict", { text, source: $("source").value });
+    current = { ...r, text };
+    const pos = r.label_id === 1;
+    $("badge").textContent = r.label;
+    $("badge").className = "badge " + (pos ? "pos" : "neg");
+    $("prob").textContent = "긍정 확률 " + Math.round(r.prob_positive * 100) + "%";
+    $("barfill").style.width = (r.prob_positive * 100) + "%";
+    $("review").hidden = !r.needs_review;
+    $("fbrow").style.display = "flex"; $("fbdone").style.display = "none";
+    $("fb-yes").disabled = $("fb-no").disabled = false;
+    $("result").style.display = "block";
+    history.unshift({ text, label: r.label, prob: r.prob_positive, verdict: "미검수", id: r.prediction_id });
+    renderHistory(); refreshStats();
+  } catch (e) { showError(e.message); }
+  finally { $("predict").disabled = false; }
+}
+
+async function sendFeedback(isCorrect) {
+  if (!current) return;
+  $("fb-yes").disabled = $("fb-no").disabled = true;
+  try {
+    const r = await api("/v1/feedback", { prediction_id: current.prediction_id, is_correct: isCorrect });
+    const truth = r.true_label === 1 ? "긍정" : "부정";
+    $("fbrow").style.display = "none";
+    $("fbdone").style.display = "block";
+    $("fbdone").textContent = (isCorrect ? "맞음으로 기록했어요." : "틀림으로 기록했어요.") + " 정답: " + truth;
+    const h = history.find((x) => x.id === current.prediction_id);
+    if (h) h.verdict = isCorrect ? "맞음" : "틀림 → " + truth;
+    renderHistory(); refreshStats();
+  } catch (e) { showError(e.message); $("fb-yes").disabled = $("fb-no").disabled = false; }
+}
+
+function renderHistory() {
+  if (!history.length) return;
+  const rows = history.slice(0, 20).map((h) =>
+    "<tr><td>" + escapeHtml(h.text) + "</td><td>" + h.label + "</td><td class='num'>" +
+    Math.round(h.prob * 100) + "%</td><td>" + h.verdict + "</td></tr>").join("");
+  $("history").innerHTML = "<table><thead><tr><th>댓글</th><th>판정</th><th>긍정 확률</th><th>검수</th></tr></thead><tbody>" + rows + "</tbody></table>";
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+async function refreshStats() {
+  try {
+    const s = await api("/v1/stats");
+    $("s-pred").textContent = s.predictions;
+    $("s-fb").textContent = s.feedback;
+    $("s-acc").textContent = s.live_accuracy == null ? "–" : (s.live_accuracy * 100).toFixed(1) + "%";
+  } catch (e) { /* 통계 실패는 화면을 막지 않음 */ }
+}
+
+$("predict").onclick = predict;
+$("fb-yes").onclick = () => sendFeedback(true);
+$("fb-no").onclick = () => sendFeedback(false);
+$("text").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) predict(); });
+api("/health").then((h) => { $("model").textContent = "model " + h.model_version + " · logs: " + h.log_sinks.join(", "); })
+  .catch(() => { $("model").textContent = "API 연결 실패"; });
+refreshStats();
+</script>
+</body>
+</html>

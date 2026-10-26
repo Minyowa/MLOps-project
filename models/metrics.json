@@ -1,0 +1,51 @@
+{
+  "dataset": "NSMC (네이버 영화 리뷰, train 150k / test 50k)",
+  "selected": "char_1-3gram",
+  "model_version": "char_1-3gram@20261026-171727",
+  "C": 2.0,
+  "validation": {
+    "baseline_majority": {
+      "val_accuracy": 0.5011
+    },
+    "word_1-2gram": {
+      "val_accuracy": 0.8145,
+      "train_accuracy": 0.8941,
+      "params": {
+        "analyzer": "word",
+        "ngram_range": [
+          1,
+          2
+        ],
+        "min_df": 2,
+        "max_features": 100000
+      }
+    },
+    "char_1-3gram": {
+      "val_accuracy": 0.8656,
+      "train_accuracy": 0.8968,
+      "params": {
+        "analyzer": "char_wb",
+        "ngram_range": [
+          1,
+          3
+        ],
+        "min_df": 2,
+        "max_features": 100000
+      }
+    }
+  },
+  "test": {
+    "accuracy": 0.8681,
+    "precision": 0.874,
+    "recall": 0.8623,
+    "f1": 0.8681,
+    "confusion_matrix": {
+      "tn": 21698,
+      "fp": 3128,
+      "fn": 3467,
+      "tp": 21704
+    },
+    "train_accuracy": 0.8978
+  },
+  "sklearn_version": "1.9.1"
+}

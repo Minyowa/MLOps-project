@@ -44,3 +44,20 @@ def test_from_env_all_sinks(aws, monkeypatch, tmp_path):
     assert lg.sink_names == ["local", "cloudwatch", "s3"]
     lg.log(EVENT)
     assert lg.errors == 0
+
+
+def test_from_env_skips_unavailable_aws_sinks(monkeypatch, tmp_path):
+    # 자격 증명·권한이 없는 EC2를 흉내: CloudWatch 연결 실패 → 서비스는 로컬 로그로 계속
+    monkeypatch.setenv("LOG_SINKS", "local,cloudwatch,s3")
+    monkeypatch.setenv("LOCAL_LOG_PATH", str(tmp_path / "e.jsonl"))
+    monkeypatch.delenv("S3_BUCKET", raising=False)
+
+    def boom(*a, **k):
+        raise RuntimeError("NoCredentials")
+
+    monkeypatch.setattr(CloudWatchSink, "__init__", boom)
+    lg = EventLogger.from_env()
+    assert lg.sink_names == ["local"]
+    assert set(lg.failed_sinks) == {"cloudwatch", "s3"}
+    lg.log(EVENT)
+    assert (tmp_path / "e.jsonl").exists()

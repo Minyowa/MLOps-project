@@ -99,7 +99,7 @@ def ui():
 @app.get("/health")
 def health():
     return {"status": "ok", "app_version": APP_VERSION, "model_version": MODEL_VERSION,
-            "brand_region": REGION, "log_sinks": logger.sink_names,
+            "brand_region": REGION, "log_sinks": logger.sink_names, "log_sinks_failed": logger.failed_sinks,
             "reputable_domains": len(REPUTABLE),
             "thresholds": {"caution": CAUTION, "danger": DANGER}}
 

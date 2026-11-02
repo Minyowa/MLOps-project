@@ -59,11 +59,11 @@ gh variable set LOG_SINKS -R "$GH_REPO" -b "$LOG_SINKS"
 # 4) 배포 실행
 step "4/5 GitHub Actions 배포 ($DEPLOY_BRANCH)"
 if gh workflow run ci-cd.yml -R "$GH_REPO" --ref "$DEPLOY_BRANCH" -f deploy=true 2>/dev/null; then
-  # 수동 실행 버튼(workflow_dispatch)은 워크플로가 main에 merge된 뒤부터 쓸 수 있음
+  # 수동 실행(workflow_dispatch) 요청이 받아들여지면 그 실행을 지켜본다
   sleep 8
   RUN_ID=$(gh run list -R "$GH_REPO" -w ci-cd -b "$DEPLOY_BRANCH" -e workflow_dispatch -L 1 --json databaseId -q '.[0].databaseId')
 else
-  # merge 전: 이 브랜치의 마지막 push 실행을 다시 돌린다 (새 Secrets 값으로 실행됨)
+  # 수동 실행이 안 되면: 이 브랜치의 마지막 push 실행을 다시 돌린다 (새 Secrets 값으로 실행됨)
   RUN_ID=$(gh run list -R "$GH_REPO" -w ci-cd -b "$DEPLOY_BRANCH" -e push -L 1 --json databaseId -q '.[0].databaseId')
   [ -n "$RUN_ID" ] || { echo "❌ $DEPLOY_BRANCH 브랜치에 push 실행 기록이 없어요. 커밋을 하나 push하세요"; exit 1; }
   gh run rerun "$RUN_ID" -R "$GH_REPO"
@@ -82,5 +82,5 @@ curl -fsS "http://$IP/health"
 echo
 echo
 echo "✅ 접속 주소: http://$IP/"
-echo "   이번 주 IP가 바뀌었으니 PR·과제 캡처에는 새 주소 화면을 쓰세요."
+echo "   EC2를 새로 만들었다면 IP가 바뀌었으니 과제 캡처에는 이 주소 화면을 쓰세요."
 echo "   다 쓰면 종료: aws ec2 terminate-instances --instance-ids $INSTANCE_ID"

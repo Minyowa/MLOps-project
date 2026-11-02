@@ -50,7 +50,7 @@ cd MLOps-project && bash infra/up.sh
 | 1 | 키 페어·보안 그룹·EC2·S3 버킷 생성 (이미 있으면 재사용, .pem이 없어졌으면 키 재발급) | AWS CLI (`create_ec2.sh`) |
 | 2 | EC2 부팅 스크립트(Docker 설치)가 끝날 때까지 SSH로 확인 | ssh |
 | 3 | `EC2_HOST`·`EC2_SSH_KEY` Secrets, `AWS_REGION`·`S3_BUCKET`·`LOG_SINKS` Variables 갱신 | gh CLI |
-| 4 | Actions 배포 실행 → 끝날 때까지 대기 (merge 전: 브랜치의 마지막 실행을 재실행 / merge 후: 수동 실행) | gh CLI |
+| 4 | Actions 배포를 수동 실행(workflow_dispatch) → 끝날 때까지 대기 (안 되면 브랜치의 마지막 실행을 재실행) | gh CLI |
 | 5 | `http://<새 IP>/health`로 배포 버전 확인 후 접속 주소 출력 | curl |
 
 - 처음 실행하면 GitHub 로그인 코드가 나옵니다. https://github.com/login/device 에 입력하면 됩니다 (CloudShell 홈이 초기화되면 다시 로그인).

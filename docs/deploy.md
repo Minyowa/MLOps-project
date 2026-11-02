@@ -35,6 +35,28 @@ bash infra/create_ec2.sh # 키 페어, 보안 그룹(22: 내 IP, 80: 전체), EC
 ```
 출력되는 **공인 IP**와 **S3 버킷 이름**을 적어 두세요. 설정은 `infra/config.env`에서 바꿀 수 있어요 (리전, 인스턴스 타입, 인스턴스 프로필).
 
+## 2-1. 매주 계정이 초기화될 때: `infra/up.sh` (명령 하나로 복구)
+
+학교 계정은 매주 EC2·키 페어가 사라지고, 새로 만들면 **공인 IP와 SSH 키가 바뀝니다.** 그러면 GitHub Secrets(`EC2_HOST`, `EC2_SSH_KEY`)도 매번 다시 넣어야 해서, 이 과정을 스크립트 하나로 묶었습니다.
+
+```bash
+# AWS 콘솔 → CloudShell (원하는 리전 선택 후)
+git clone -b feature/deploy-japan https://github.com/Minyowa/MLOps-project.git
+cd MLOps-project && bash infra/up.sh
+```
+
+| 단계 | 하는 일 | 도구 |
+|---|---|---|
+| 1 | 키 페어·보안 그룹·EC2·S3 버킷 생성 (이미 있으면 재사용, .pem이 없어졌으면 키 재발급) | AWS CLI (`create_ec2.sh`) |
+| 2 | EC2 부팅 스크립트(Docker 설치)가 끝날 때까지 SSH로 확인 | ssh |
+| 3 | `EC2_HOST`·`EC2_SSH_KEY` Secrets, `AWS_REGION`·`S3_BUCKET`·`LOG_SINKS` Variables 갱신 | gh CLI |
+| 4 | Actions 배포 실행 → 끝날 때까지 대기 (merge 전: 브랜치의 마지막 실행을 재실행 / merge 후: 수동 실행) | gh CLI |
+| 5 | `http://<새 IP>/health`로 배포 버전 확인 후 접속 주소 출력 | curl |
+
+- 처음 실행하면 GitHub 로그인 코드가 나옵니다. https://github.com/login/device 에 입력하면 됩니다 (CloudShell 홈이 초기화되면 다시 로그인).
+- **왜 Actions가 EC2까지 만들지 않나**: 학생 계정은 IAM 역할(OIDC)을 만들 수 없고 자격 증명도 초기화되어, AWS 키를 GitHub에 둘 수 없습니다. 이미 로그인된 CloudShell에서 한 번 실행하는 방식이 가장 안전합니다.
+- 이미지 저장소(GHCR)는 GitHub에 있어서 AWS가 초기화돼도 남아 있습니다.
+
 ## 3. 배포 자동화 — 방법 A: GitHub Actions (`.github/workflows/ci-cd.yml`)
 
 **설정** (GitHub 저장소 → Settings → Secrets and variables → Actions)

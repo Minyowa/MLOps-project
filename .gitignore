@@ -6,3 +6,6 @@ __pycache__/
 data/
 # 로컬 로그
 logs/
+
+# infra/create_ec2.sh 결과 (IP 등)
+infra/.ec2.env

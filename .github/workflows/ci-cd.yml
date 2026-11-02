@@ -1,7 +1,8 @@
 # LinkGuard CI/CD
 #   PR           : 테스트 → 이미지 빌드 → 컨테이너 띄워서 동작 확인(스모크 테스트)
-#   main push /
-#   수동 실행     : 위 + GHCR에 이미지 푸시 → EC2에 배포 → /health로 배포 버전 확인
+#   main 또는 feature/deploy-* 브랜치 push / 수동 실행
+#                : 위 + GHCR에 이미지 푸시 → EC2에 배포 → /health로 배포 버전 확인
+#   (수동 실행 버튼은 이 파일이 main에 있어야 보이므로, merge 전에는 feature/deploy-* 브랜치 push로 배포)
 #
 # 배포에 필요한 설정 (Settings → Secrets and variables → Actions)
 #   secrets.EC2_HOST      EC2 공인 IP 또는 도메인
@@ -15,7 +16,7 @@ name: ci-cd
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, "feature/deploy-*"]
   workflow_dispatch:
     inputs:
       deploy:

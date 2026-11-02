@@ -51,7 +51,8 @@ bash infra/create_ec2.sh # 키 페어, 보안 그룹(22: 내 IP, 80: 전체), EC
 
 **실행**
 - PR을 올리면: 테스트 → 이미지 빌드 → 컨테이너 스모크 테스트 (배포 안 함)
-- `main`에 push하거나 **Actions → ci-cd → Run workflow**(브랜치 선택): 위 + 푸시 + EC2 배포 + 버전 확인
+- `main` 또는 `feature/deploy-*` 브랜치에 push: 위 + GHCR 푸시 + EC2 배포 + 버전 확인
+- **Actions → ci-cd → Run workflow**(수동 실행)도 같지만, 이 버튼은 워크플로 파일이 main에 merge된 뒤에만 보여요. 그 전에는 `feature/deploy-japan` 브랜치에 push해서 배포하세요.
 - 비밀값이 없으면 배포 단계는 "건너뜀" 안내만 남기고 성공 처리돼요.
 
 ## 4. 배포 자동화 — 방법 B: 로컬에서 AWS CLI 스크립트 (`infra/deploy.sh`)
@@ -73,7 +74,7 @@ S3_BUCKET=linkguard-logs-<계정ID> bash infra/deploy.sh feature/deploy-japan
 ## 6. 문구 수정 후 재배포 (과제 7)
 1. `app/static/index.html`의 `title` 문구 한 줄을 바꾸고 커밋·푸시합니다.
    예: `title: "届いたリンク、開く前にチェック"` → `"届いたリンク、開く前に必ずチェック"`
-2. Actions → ci-cd → Run workflow (또는 `bash infra/deploy.sh <브랜치>`)
+2. `feature/deploy-japan` 브랜치에 push하면 Actions가 자동으로 배포해요 (또는 `bash infra/deploy.sh feature/deploy-japan`).
 3. 확인할 것
    - Actions 로그 마지막에 `✅ http://<IP> 에 <새 커밋> 배포 완료`가 찍혀요.
    - 웹 화면의 제목이 바뀌고, 맨 아래 `app` 버전이 새 커밋으로 바뀌어요.

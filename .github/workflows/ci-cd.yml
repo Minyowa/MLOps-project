@@ -1,0 +1,161 @@
+# LinkGuard CI/CD
+#   PR           : 테스트 → 이미지 빌드 → 컨테이너 띄워서 동작 확인(스모크 테스트)
+#   main 또는 feature/deploy-* 브랜치 push / 수동 실행
+#                : 위 + GHCR에 이미지 푸시 → EC2에 배포 → /health로 배포 버전 확인
+#   (수동 실행 버튼은 이 파일이 main에 있어야 보이므로, merge 전에는 feature/deploy-* 브랜치 push로 배포)
+#
+# 배포에 필요한 설정 (Settings → Secrets and variables → Actions)
+#   secrets.EC2_HOST      EC2 공인 IP 또는 도메인
+#   secrets.EC2_SSH_KEY   EC2 키 페어 .pem 내용
+#   vars.S3_BUCKET        로그 버킷 (infra/create_ec2.sh 출력값)
+#   vars.AWS_REGION       예: ap-northeast-1
+#   vars.LOG_SINKS        선택, 기본 local,cloudwatch,s3
+# 비밀값이 없으면 deploy 단계는 건너뛴다 (실패하지 않음).
+name: ci-cd
+
+on:
+  pull_request:
+  push:
+    branches: [main, "feature/deploy-*"]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "EC2에 배포"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+      - name: 테스트 (API·규칙·모델 품질·CloudWatch/S3 모의)
+        run: pytest -q
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 이미지 이름·버전
+        id: meta
+        run: |
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          echo "version=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+      - name: Docker 이미지 빌드
+        run: |
+          docker build --build-arg APP_VERSION=${{ steps.meta.outputs.version }} \
+            -t ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.version }} \
+            -t ${{ steps.meta.outputs.image }}:latest .
+          docker image ls ${{ steps.meta.outputs.image }}
+      - name: 컨테이너 스모크 테스트
+        env:
+          IMAGE: ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.version }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          docker run -d --name lg -p 8000:8000 "$IMAGE"
+          for _ in $(seq 1 30); do curl -fsS localhost:8000/health && break; sleep 2; done
+          echo
+          curl -fsS localhost:8000/health | jq -e --arg v "$VERSION" '.status == "ok" and .app_version == $v and .brand_region == "jp"'
+          echo "--- 사칭 링크"
+          curl -fsS -X POST localhost:8000/v1/check -H 'content-type: application/json' \
+            -d '{"url":"https://kuronekoyamato-delivery.top/jp"}' | tee /tmp/fake.json | jq .
+          jq -e '.verdict == "위험" and .stage == "brand_impersonation"' /tmp/fake.json
+          echo "--- 공식 사이트"
+          curl -fsS -X POST localhost:8000/v1/check -H 'content-type: application/json' \
+            -d '{"url":"https://toi.kuronekoyamato.co.jp/cgi-bin/tneko"}' | tee /tmp/real.json | jq .
+          jq -e '.verdict == "안전" and .stage == "official_brand"' /tmp/real.json
+          echo "--- 신고"
+          ID=$(jq -r .check_id /tmp/fake.json)
+          curl -fsS -X POST localhost:8000/v1/feedback -H 'content-type: application/json' \
+            -d "{\"check_id\":\"$ID\",\"true_label\":1}" | jq -e '.is_correct == true'
+          curl -fsS localhost:8000/ | grep -q LinkGuard
+          docker inspect --format '{{.State.Health.Status}}' lg
+          docker logs lg | tail -20
+      - name: GHCR 로그인
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: 이미지 푸시
+        if: github.event_name != 'pull_request'
+        run: |
+          docker push ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.version }}
+          docker push ${{ steps.meta.outputs.image }}:latest
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy)
+    runs-on: ubuntu-latest
+    env:
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      IMAGE: ${{ needs.build.outputs.image }}:${{ needs.build.outputs.version }}
+      VERSION: ${{ needs.build.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 배포 설정 확인
+        id: check
+        run: |
+          if [ -z "$EC2_HOST" ]; then
+            echo "::notice::EC2_HOST secret이 없어 배포를 건너뜁니다 (docs/deploy.md 참고)"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: SSH 준비
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2.pem && chmod 600 ~/.ssh/ec2.pem
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+      - name: EC2에 배포 (GHCR 이미지 pull → compose 재시작)
+        if: steps.check.outputs.skip != 'true'
+        env:
+          SSH_USER: ${{ vars.EC2_USER || 'ec2-user' }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          S3_BUCKET: ${{ vars.S3_BUCKET }}
+          AWS_REGION: ${{ vars.AWS_REGION || 'ap-northeast-1' }}
+          LOG_SINKS: ${{ vars.LOG_SINKS || 'local,cloudwatch,s3' }}
+        run: |
+          scp -i ~/.ssh/ec2.pem docker-compose.yml "$SSH_USER@$EC2_HOST:/opt/linkguard/docker-compose.yml"
+          # 변수는 러너에서 채워서 보낸다 (의도된 동작)
+          # shellcheck disable=SC2087
+          ssh -i ~/.ssh/ec2.pem "$SSH_USER@$EC2_HOST" bash -s <<EOF
+          set -euo pipefail
+          cd /opt/linkguard
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          export IMAGE="$IMAGE" APP_VERSION="$VERSION" PORT=80 LOG_SINKS="$LOG_SINKS" S3_BUCKET="$S3_BUCKET" AWS_DEFAULT_REGION="$AWS_REGION"
+          mkdir -p logs && sudo chown 10001 logs
+          docker compose pull
+          docker compose up -d --no-build
+          docker logout ghcr.io
+          docker image prune -f > /dev/null
+          docker compose ps
+          EOF
+      - name: 배포 확인 (/health의 app_version)
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          for _ in $(seq 1 30); do
+            if curl -fsS "http://$EC2_HOST/health" | tee /tmp/h.json | jq -e --arg v "$VERSION" '.app_version == $v'; then
+              echo "✅ http://$EC2_HOST 에 $VERSION 배포 완료"; exit 0
+            fi
+            sleep 5
+          done
+          echo "❌ 배포 버전 확인 실패"; cat /tmp/h.json || true; exit 1

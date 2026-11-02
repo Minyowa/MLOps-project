@@ -1,0 +1,21 @@
+# 로컬:  docker compose up --build            → http://localhost:8080
+# EC2 :  IMAGE=ghcr.io/minyowa/mlops-project:<sha> PORT=80 docker compose up -d   (infra/deploy.sh가 실행)
+services:
+  linkguard:
+    image: ${IMAGE:-linkguard:local}
+    build:
+      context: .
+      args:
+        APP_VERSION: ${APP_VERSION:-local}
+    ports:
+      - "${PORT:-8080}:8000"
+    environment:
+      LOG_SINKS: ${LOG_SINKS:-local}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_PREFIX: ${S3_PREFIX:-logs/}
+      CW_LOG_GROUP: ${CW_LOG_GROUP:-/linkguard/app}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-ap-northeast-1}
+      BRAND_REGION: ${BRAND_REGION:-jp}
+    volumes:
+      - ./logs:/app/logs          # 로컬 로그(events.jsonl) 보관
+    restart: unless-stopped

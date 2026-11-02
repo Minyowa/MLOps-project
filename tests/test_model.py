@@ -39,8 +39,9 @@ def test_reputation_list_excludes_phishing_hosts():
     assert M["service_with_rules"]["phishing_passed_by_rules"] < 50
 
 
-def test_korean_services_and_impersonation():
-    k = json.loads((ROOT / "models" / "metrics_korea.json").read_text())
-    assert k["korean_services"]["service_not_safe"] == []
-    assert k["impersonation_examples"]["service_danger"] == k["impersonation_examples"]["n"]
-    assert k["service_with_rules"]["false_alarm_rate"] <= 0.05
+def test_japan_evaluation():
+    j = json.loads((ROOT / "models" / "metrics_japan.json").read_text())
+    assert j["japanese_services"]["service_not_safe"] == []
+    assert j["jpcert_real_phishing"]["brand_matches_jpcert_label"] >= 0.9
+    assert j["jpcert_real_phishing"]["passed_as_official_brand"] == 0
+    assert j["popular_jp_sites"]["service"]["false_alarm_rate"] <= 0.06

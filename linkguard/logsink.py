@@ -84,22 +84,36 @@ class EventLogger:
     def __init__(self, sinks):
         self.sinks = list(sinks)
         self.errors = 0
+        self.failed_sinks: dict[str, str] = {}
 
     @classmethod
     def from_env(cls) -> "EventLogger":
+        """LOG_SINKS에 적힌 싱크를 만든다. AWS 싱크를 못 만들면(권한·자격 증명 없음)
+        경고만 남기고 건너뛴다 — 로그 설정 때문에 서비스가 안 뜨는 일을 막는다."""
         names = [s.strip() for s in os.getenv("LOG_SINKS", "local").split(",") if s.strip()]
-        sinks = []
+        sinks, failed = [], {}
         for n in names:
-            if n == "local":
-                sinks.append(LocalSink(os.getenv("LOCAL_LOG_PATH", "logs/events.jsonl")))
-            elif n == "cloudwatch":
-                sinks.append(CloudWatchSink(os.getenv("CW_LOG_GROUP", "/linkguard/app"),
-                                            os.getenv("CW_LOG_STREAM", f"api-{os.getpid()}")))
-            elif n == "s3":
-                sinks.append(S3Sink(os.environ["S3_BUCKET"], os.getenv("S3_PREFIX", "logs/")))
-            else:
-                raise ValueError(f"알 수 없는 LOG_SINKS 항목: {n}")
-        return cls(sinks)
+            try:
+                if n == "local":
+                    sinks.append(LocalSink(os.getenv("LOCAL_LOG_PATH", "logs/events.jsonl")))
+                elif n == "cloudwatch":
+                    sinks.append(CloudWatchSink(os.getenv("CW_LOG_GROUP", "/linkguard/app"),
+                                                os.getenv("CW_LOG_STREAM", f"api-{os.getpid()}")))
+                elif n == "s3":
+                    bucket = os.getenv("S3_BUCKET")
+                    if not bucket:
+                        raise ValueError("S3_BUCKET이 비어 있음")
+                    sinks.append(S3Sink(bucket, os.getenv("S3_PREFIX", "logs/")))
+                else:
+                    raise ValueError(f"알 수 없는 LOG_SINKS 항목: {n}")
+            except Exception as e:  # noqa: BLE001
+                failed[n] = f"{type(e).__name__}: {e}"[:200]
+                print(f"[logsink] {n} 싱크를 쓸 수 없어 건너뜀 → {failed[n]}", file=sys.stderr)
+        if not any(s.name == "local" for s in sinks):   # 최소한 로컬 로그는 남긴다
+            sinks.append(LocalSink(os.getenv("LOCAL_LOG_PATH", "logs/events.jsonl")))
+        logger = cls(sinks)
+        logger.failed_sinks = failed
+        return logger
 
     @staticmethod
     def now() -> str:

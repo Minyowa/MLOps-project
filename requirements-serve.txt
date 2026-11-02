@@ -1,0 +1,6 @@
+# 서빙(컨테이너)에 필요한 것만
+fastapi>=0.110
+uvicorn[standard]>=0.29
+scikit-learn==1.9.1
+joblib>=1.3
+boto3>=1.34

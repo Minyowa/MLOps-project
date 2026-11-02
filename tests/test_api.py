@@ -33,7 +33,8 @@ def events(path):
 
 
 def test_health_and_ui():
-    assert client.get("/health").json()["status"] == "ok"
+    h = client.get("/health").json()
+    assert h["status"] == "ok" and h["brand_region"] == "jp" and "app_version" in h
     assert "LinkGuard" in client.get("/").text
 
 
@@ -47,7 +48,7 @@ def test_verdict_levels(monkeypatch, p, verdict, label):
 
 def test_official_domain_bypasses_model(monkeypatch):
     monkeypatch.setattr(main, "_model", Stub(0.99))
-    r = client.post("/v1/check", json={"url": "https://www.hometax.go.kr/websquare/websquare.html"}).json()
+    r = client.post("/v1/check", json={"url": "https://www.nta.go.jp/taxes/"}).json()
     assert r["verdict"] == "안전" and r["stage"] == "official_domain"
 
 
@@ -101,12 +102,14 @@ def test_log_failure_does_not_break_api(monkeypatch):
 
 def test_reputable_domain_rule(monkeypatch):
     monkeypatch.setattr(main, "_model", Stub(0.99))
-    monkeypatch.setattr(main, "REPUTABLE", {"musinsa.com"})
-    r = client.post("/v1/check", json={"url": "https://www.musinsa.com/products/1"}).json()
+    monkeypatch.setattr(main, "REPUTABLE", {"yahoo.co.jp"})
+    r = client.post("/v1/check", json={"url": "https://news.yahoo.co.jp/articles/1"}).json()
     assert r["verdict"] == "안전" and r["stage"] == "reputable_domain"
-    r1 = client.post("/v1/check", json={"url": "https://www.coupang.com/vp/products/1"}).json()
-    assert r1["verdict"] == "안전" and r1["stage"] == "official_brand"
+    r1 = client.post("/v1/check", json={"url": "https://www.amazon.co.jp/gp/your-account"}).json()
+    assert r1["verdict"] == "안전" and r1["stage"] == "official_brand" and r1["brand"] == "Amazon"
     monkeypatch.setattr(main, "_model", Stub(0.2))
-    r2 = client.post("/v1/check", json={"url": "https://coupang.com.evil.top/login"}).json()
+    r2 = client.post("/v1/check", json={"url": "https://amazon.co.jp.evil.top/login"}).json()
     assert r2["verdict"] == "위험" and r2["stage"] == "brand_impersonation"   # 이름만 흉내 낸 가짜
-    assert any("쿠팡" in x for x in r2["reasons"])
+    assert "brand_impersonation" in r2["reason_codes"] and "Amazon" in r2["reasons"][0]
+    r3 = client.post("/v1/check", json={"url": "https://amazon.co.jp.evil.top/login", "lang": "ko"}).json()
+    assert "사칭" in r3["reasons"][0]

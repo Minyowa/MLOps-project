@@ -95,7 +95,7 @@ def extract(url: str) -> dict[str, float]:
     }
 
 
-OFFICIAL_SUFFIXES = (".go.kr", ".gov", ".mil", ".korea.kr")
+OFFICIAL_SUFFIXES = (".go.jp", ".lg.jp", ".go.kr", ".gov", ".mil", ".korea.kr")
 OFFICIAL_EXACT = {"gov.kr", "korea.kr"}
 
 
@@ -126,27 +126,19 @@ def to_vector(feats: dict[str, float]) -> list[float]:
     return [feats[n] for n in FEATURE_NAMES]
 
 
-def reasons(feats: dict[str, float]) -> list[str]:
-    """사용자에게 보여 줄 '눈에 띄는 특징' (모델 판단의 보조 설명, 규칙 기반)."""
-    r = []
-    if feats["is_ip"]:
-        r.append("사이트 이름 대신 IP 주소(숫자)로 된 링크예요")
-    if feats["n_at"]:
-        r.append("주소에 '@'가 있어요 — 앞부분을 무시하고 다른 사이트로 보내는 수법에 쓰여요")
-    if feats["is_shortener"]:
-        r.append("단축 URL이라 실제 목적지가 가려져 있어요")
-    if feats["n_suspicious_words"]:
-        r.append("로그인·계정 확인·보안 업데이트 같은 단어가 들어 있어요")
-    if feats["exec_ext"]:
-        r.append("파일 다운로드나 실행 스크립트(.apk, .exe 등)로 이어지는 링크예요")
-    if feats["n_subdomains"] >= 3:
-        r.append("하위 주소(점으로 구분된 마디)가 지나치게 많아요")
-    if feats["host_digits"] >= 4:
-        r.append("사이트 이름에 숫자가 많이 섞여 있어요")
-    if not feats["common_tld"] and not feats["is_ip"]:
-        r.append("흔하지 않은 도메인 끝자리예요")
-    if feats["has_port"]:
-        r.append("특수한 포트 번호를 지정한 링크예요")
-    if feats["url_len"] >= 90:
-        r.append("주소가 비정상적으로 길어요")
-    return r
+def reasons(feats: dict[str, float]) -> list[dict]:
+    """사용자에게 보여 줄 '눈에 띄는 특징' 코드 (모델 판단의 보조 설명, 규칙 기반).
+    문장은 linkguard/i18n.py에서 언어별(ja/ko)로 만든다."""
+    checks = [
+        ("ip_host", feats["is_ip"]),
+        ("at_sign", feats["n_at"]),
+        ("shortener", feats["is_shortener"]),
+        ("suspicious_words", feats["n_suspicious_words"]),
+        ("executable", feats["exec_ext"]),
+        ("many_subdomains", feats["n_subdomains"] >= 3),
+        ("digits_in_host", feats["host_digits"] >= 4),
+        ("rare_tld", not feats["common_tld"] and not feats["is_ip"]),
+        ("port", feats["has_port"]),
+        ("long_url", feats["url_len"] >= 90),
+    ]
+    return [{"code": code} for code, hit in checks if hit]

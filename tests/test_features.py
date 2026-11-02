@@ -20,6 +20,7 @@ def test_registered_domain_handles_two_level_tld():
 
 
 @pytest.mark.parametrize("url,official", [
+    ("https://www.nta.go.jp/taxes/", True), ("https://www.city.yokohama.lg.jp", True), ("nta.go.jp.evil.top", False),
     ("https://www.hometax.go.kr/websquare", True), ("gov.kr/portal", True), ("www.gov.kr", True),
     ("fake-gov.kr/login", False), ("gov.kr.evil.top/", False), ("go.kr-check.com/", False),
 ])
@@ -33,6 +34,6 @@ def test_redact_hides_query_values():
 
 
 def test_reasons_for_obvious_signals():
-    r = reasons(extract("http://192.168.0.1:8080/login/verify"))
-    assert any("IP" in x for x in r) and any("로그인" in x for x in r) and any("포트" in x for x in r)
+    codes = {r["code"] for r in reasons(extract("http://192.168.0.1:8080/login/verify"))}
+    assert {"ip_host", "suspicious_words", "port"} <= codes
     assert set(extract("naver.com")) == set(FEATURE_NAMES)

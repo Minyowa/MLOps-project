@@ -1,48 +1,57 @@
-"""한국 맞춤 판정 규칙 (linkguard/policy.py, korea_brands.py)."""
+"""판정 규칙 (linkguard/policy.py, brands.py) — 기본 지역 jp."""
 import pytest
 
+from linkguard.brands import USER_CONTENT_HOSTS, impersonated_brand, official_brand
 from linkguard.features import host_of, normalize, registered_domain
-from linkguard.korea_brands import impersonated_brand, official_brand
+from linkguard.i18n import MESSAGES, render
 from linkguard.policy import decide
 
 
 def brand_of(url):
-    n = normalize(url)
-    h = host_of(n)
-    return official_brand(registered_domain(h)), impersonated_brand(h, registered_domain(h))
+    h = host_of(normalize(url))
+    d = registered_domain(h)
+    return official_brand(d), impersonated_brand(h, d)
 
 
 @pytest.mark.parametrize("url,brand", [
-    ("https://www.cjlogistics.com/ko/tool/parcel/tracking", "CJ대한통운"),
-    ("https://open.kakao.com/o/x", "카카오"), ("https://m.kakaobank.com", "카카오"),
-    ("https://www.shinhanlife.co.kr", "신한"),
+    ("https://toi.kuronekoyamato.co.jp/cgi-bin/tneko", "ヤマト運輸"),
+    ("https://www.smbc-card.com/mem/index.jsp", "三井住友カード"),
+    ("https://www.post.japanpost.jp", "日本郵便"), ("https://www.bk.mufg.jp", "三菱UFJ"),
+    ("https://www.amazon.co.uk", "Amazon"), ("https://www.eki-net.com", "えきねっと"),
 ])
 def test_official_brand_domains(url, brand):
     assert brand_of(url) == (brand, None)
 
 
 @pytest.mark.parametrize("url,brand", [
-    ("https://cjlogistics-delivery.top/kr", "CJ대한통운"), ("http://epost-kr.cfd/?info=x", "우체국"),
-    ("https://kakaobank-login.top", "카카오"), ("https://naver.com.verify.top/login", "네이버"),
-    ("https://shinhancard-pay.cc", "신한"), ("https://ibk-bank.xyz", "IBK기업은행"),
+    ("https://kuronekoyamato-delivery.top/jp", "ヤマト運輸"), ("https://smbc-card-login.top/vpass", "三井住友カード"),
+    ("https://amazon.co.jp.verify-account.xyz", "Amazon"), ("https://eki-net-pay.cc", "えきねっと"),
+    ("https://etc-meisai.zuj74.com", "ETC利用照会サービス"), ("https://jcb-secure.shop", "JCB"),
 ])
 def test_impersonation_detected(url, brand):
     assert brand_of(url)[1] == brand
 
 
-@pytest.mark.parametrize("url", ["https://ibkr.com", "https://tossup.com", "https://hanjinshipping.com",
-                                 "https://mycjlogistics.com", "https://www.google.com"])
-def test_short_keywords_do_not_overmatch(url):
+@pytest.mark.parametrize("url", ["https://jcbfoods.com", "https://www.amazonia-travel.com",
+                                 "https://www.google.co.jp", "https://news.yahoo.co.jp"])
+def test_no_overmatch(url):
     assert brand_of(url) == (None, None)
 
 
-def test_decide_order():
-    # 공식 기관 도메인은 모델 점수가 높아도 안전
-    assert decide(normalize("https://www.cjlogistics.com/ko/tool"), 0.97, set()).stage == "official_brand"
-    # 평판 도메인이 사칭 판정보다 먼저 (계열사 실제 사이트 보호)
-    assert decide(normalize("https://kakaogames.com"), 0.6, {"kakaogames.com"}).stage == "reputable_domain"
-    # 사칭은 모델 점수가 낮아도 최소 0.9
-    d = decide(normalize("https://toss-event.shop"), 0.1, set())
-    assert d.stage == "brand_impersonation" and d.risk == 0.9 and "토스" in d.reasons[0]
-    # 정부 도메인
-    assert decide(normalize("https://www.hometax.go.kr"), 0.99, set()).stage == "official_domain"
+def test_user_content_hosts_are_not_trusted():
+    for d in USER_CONTENT_HOSTS:
+        assert official_brand(d) is None
+    assert decide(normalize("https://forms.office.com/r/abc"), 0.8, {"office.com"}).stage == "model"
+
+
+def test_decide_order_and_messages():
+    assert decide(normalize("https://toi.kuronekoyamato.co.jp/x"), 0.97, set()).stage == "official_brand"
+    assert decide(normalize("https://www.city.yokohama.lg.jp"), 0.99, set()).stage == "official_domain"
+    assert decide(normalize("https://kddi-research.jp"), 0.6, {"kddi-research.jp"}).stage == "reputable_domain"
+    d = decide(normalize("https://jcb-secure.shop"), 0.1, set())
+    assert d.stage == "brand_impersonation" and d.risk == 0.9 and d.brand == "JCB"
+    assert "JCB" in render(d.reasons[0], "ja") and "사칭" in render(d.reasons[0], "ko")
+
+
+def test_i18n_tables_have_same_keys():
+    assert set(MESSAGES["ja"]) == set(MESSAGES["ko"])

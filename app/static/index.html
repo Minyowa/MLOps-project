@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LinkGuard 링크 검사</title>
+<title>LinkGuard</title>
 <style>
   :root {
     --bg: #f4f5f7; --panel: #ffffff; --ink: #16181d; --muted: #646a73; --line: #e2e5ea; --accent: #16181d;
@@ -17,9 +17,14 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink);
-         font: 15px/1.55 -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif; }
-  main { max-width: 720px; margin: 0 auto; padding: 32px 16px 64px; }
-  h1 { font-size: 24px; margin: 0; letter-spacing: -0.02em; }
+         font: 15px/1.6 -apple-system, "Hiragino Sans", "Yu Gothic UI", "Meiryo", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 28px 16px 64px; }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .brandmark { font-weight: 800; letter-spacing: -0.02em; }
+  .lang { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .lang button { border: 0; border-radius: 0; padding: 5px 12px; font-size: 13px; background: transparent; color: var(--muted); }
+  .lang button[aria-pressed="true"] { background: var(--accent); color: var(--bg); }
+  h1 { font-size: 24px; margin: 18px 0 0; letter-spacing: -0.02em; }
   .sub { color: var(--muted); margin: 6px 0 24px; }
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
   label.small { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
@@ -47,7 +52,7 @@
   .bar > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; }
   .safe .bar > span { background: var(--safe); } .warn .bar > span { background: var(--warn); } .danger .bar > span { background: var(--danger); }
   .bar-legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
-  ul.reasons { margin: 12px 0 0; padding-left: 18px; color: var(--ink); }
+  ul.reasons { margin: 12px 0 0; padding-left: 18px; }
   ul.reasons li { margin: 2px 0; }
   .fb { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 14px; }
   .fb p { margin: 0; font-weight: 600; } .fb small { color: var(--muted); }
@@ -63,28 +68,35 @@
   h2 { font-size: 15px; margin: 0 0 12px; }
   .empty { color: var(--muted); font-size: 14px; margin: 0; }
   .err { color: var(--danger); margin-top: 10px; display: none; }
-  .meta { color: var(--muted); font-size: 12px; font-family: ui-monospace, Menlo, monospace; }
+  .meta { color: var(--muted); font-size: 12px; font-family: ui-monospace, Menlo, monospace; margin-top: 12px; }
   @media (max-width: 520px) { .stats { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
 <main>
-  <h1>받은 링크, 열기 전에 검사하세요</h1>
-  <p class="sub">문자·메신저·메일로 받은 링크를 붙여 넣으면 피싱(스미싱) 위험도를 알려 드려요. 링크는 열지 않고 주소 모양만 분석합니다.</p>
+  <div class="top">
+    <span class="brandmark">LinkGuard</span>
+    <div class="lang" role="group" aria-label="language">
+      <button data-lang="ja" aria-pressed="true">日本語</button>
+      <button data-lang="ko" aria-pressed="false">한국어</button>
+    </div>
+  </div>
+  <h1 data-i18n="title"></h1>
+  <p class="sub" data-i18n="subtitle"></p>
 
   <section class="panel">
-    <label class="small" for="url">링크 주소</label>
-    <input type="text" id="url" placeholder="예: https://cjlogistics-delivery.top/kr" autocomplete="off" spellcheck="false">
+    <label class="small" for="url" data-i18n="url_label"></label>
+    <input type="text" id="url" placeholder="https://kuronekoyamato-delivery.top/jp" autocomplete="off" spellcheck="false">
     <div class="chips" id="chips"></div>
     <div class="row">
-      <select id="channel" aria-label="받은 경로">
-        <option value="sms">문자(SMS)</option>
-        <option value="messenger">메신저</option>
-        <option value="email">이메일</option>
-        <option value="web">웹사이트</option>
-        <option value="other">기타</option>
+      <select id="channel" aria-label="channel">
+        <option value="sms" data-i18n="ch_sms"></option>
+        <option value="messenger" data-i18n="ch_messenger"></option>
+        <option value="email" data-i18n="ch_email"></option>
+        <option value="web" data-i18n="ch_web"></option>
+        <option value="other" data-i18n="ch_other"></option>
       </select>
-      <button class="primary" id="check">검사하기</button>
+      <button class="primary" id="check" data-i18n="check"></button>
     </div>
     <div class="err" id="err"></div>
   </section>
@@ -95,53 +107,105 @@
       <span class="host" id="host"></span>
     </div>
     <div class="bar"><span id="barfill"></span></div>
-    <div class="bar-legend"><span>안전</span><span id="risktxt"></span><span>위험</span></div>
+    <div class="bar-legend"><span data-i18n="v_safe"></span><span id="risktxt"></span><span data-i18n="v_danger"></span></div>
     <p class="advice" id="advice"></p>
     <ul class="reasons" id="reasons"></ul>
     <div class="fb">
-      <p>이 링크, 실제로는 어땠나요?</p>
-      <small>알려 주시면 판정 정확도를 높이는 데 쓰여요. 나중에 확인되면 그때 눌러도 돼요.</small>
+      <p data-i18n="fb_q"></p>
+      <small data-i18n="fb_hint"></small>
       <div class="row" id="fbrow">
-        <button id="fb-scam">사기였어요</button>
-        <button id="fb-safe">안전했어요</button>
+        <button id="fb-scam" data-i18n="fb_scam"></button>
+        <button id="fb-safe" data-i18n="fb_safe"></button>
       </div>
       <div class="fb-done" id="fbdone"></div>
     </div>
   </section>
 
   <section class="panel">
-    <h2>지금까지 검사 현황</h2>
+    <h2 data-i18n="stats_title"></h2>
     <div class="stats">
-      <div class="stat"><b id="s-checks">–</b><span>검사한 링크</span></div>
-      <div class="stat"><b id="s-fb">–</b><span>결과를 알려 준 링크</span></div>
-      <div class="stat"><b id="s-acc">–</b><span>실제 정확도</span></div>
+      <div class="stat"><b id="s-checks">–</b><span data-i18n="s_checks"></span></div>
+      <div class="stat"><b id="s-fb">–</b><span data-i18n="s_fb"></span></div>
+      <div class="stat"><b id="s-acc">–</b><span data-i18n="s_acc"></span></div>
     </div>
   </section>
 
   <section class="panel">
-    <h2>내 검사 기록</h2>
-    <div id="history"><p class="empty">아직 검사한 링크가 없어요.</p></div>
-    <p class="meta" id="model" style="margin-top:12px"></p>
+    <h2 data-i18n="hist_title"></h2>
+    <div id="history"><p class="empty" data-i18n="hist_empty"></p></div>
+    <p class="meta" id="meta"></p>
   </section>
 </main>
 
 <script>
-const SAMPLES = [
-  "https://cjlogistics-delivery.top/kr",
-  "http://bsqzqdqykm.duckdns.org/?vjhgb",
-  "https://www.coupang.com/vp/products/123456",
-  "https://www.hometax.go.kr",
-  "http://192.168.10.5/login/verify.php",
-];
-const ADVICE = {
-  "안전": "특별히 위험한 특징은 보이지 않아요. 그래도 개인정보·결제 요구는 한 번 더 확인하세요.",
-  "주의": "확신하기 어려워요. 링크를 열기보다 공식 앱이나 직접 검색으로 접속하세요.",
-  "위험": "피싱일 가능성이 높아요. 링크를 열지 말고, 개인정보·인증번호를 입력하지 마세요.",
+const T = {
+  ja: {
+    title: "届いたリンク、開く前にチェック",
+    subtitle: "SMS・メッセンジャー・メールで届いたリンクを貼り付けると、フィッシング（スミッシング）の危険度をお知らせします。リンクは開かず、アドレスの形だけを分析します。",
+    url_label: "リンクのアドレス", check: "チェックする",
+    ch_sms: "SMS", ch_messenger: "メッセンジャー", ch_email: "メール", ch_web: "ウェブサイト", ch_other: "その他",
+    v_safe: "安全", v_warn: "注意", v_danger: "危険", risk: "危険度",
+    adv_safe: "特に危険な特徴は見当たりません。それでも個人情報や支払いを求められたら、もう一度確認してください。",
+    adv_warn: "判断が難しいリンクです。リンクを開かず、公式アプリや検索から直接アクセスしてください。",
+    adv_danger: "フィッシングの可能性が高いです。リンクを開かず、個人情報や認証コードを入力しないでください。",
+    no_reason: "目立った危険のサインはありません",
+    fb_q: "このリンク、実際はどうでしたか？", fb_hint: "教えていただくと判定の精度向上に役立ちます。後で分かった時に押しても大丈夫です。",
+    fb_scam: "詐欺だった", fb_safe: "安全だった",
+    fb_done_scam: "詐欺だったと記録しました。", fb_done_safe: "安全だったと記録しました。",
+    fb_right: "判定は正しかったです。", fb_wrong: "判定が間違っていました。次の学習に反映します。",
+    stats_title: "これまでのチェック状況", s_checks: "チェックしたリンク", s_fb: "結果の報告", s_acc: "実際の正確度",
+    hist_title: "チェック履歴", hist_empty: "まだチェックしたリンクはありません。",
+    h_link: "リンク", h_verdict: "判定", h_risk: "危険度", h_truth: "実際", t_scam: "詐欺", t_safe: "安全",
+    e_empty: "リンクを貼り付けてください。", e_format: "リンクの形式を確認してください。", e_api: "サーバーに接続できません",
+  },
+  ko: {
+    title: "받은 링크, 열기 전에 검사하세요",
+    subtitle: "문자·메신저·메일로 받은 링크를 붙여 넣으면 피싱(스미싱) 위험도를 알려 드려요. 링크는 열지 않고 주소 모양만 분석합니다.",
+    url_label: "링크 주소", check: "검사하기",
+    ch_sms: "문자(SMS)", ch_messenger: "메신저", ch_email: "이메일", ch_web: "웹사이트", ch_other: "기타",
+    v_safe: "안전", v_warn: "주의", v_danger: "위험", risk: "위험도",
+    adv_safe: "특별히 위험한 특징은 보이지 않아요. 그래도 개인정보·결제 요구는 한 번 더 확인하세요.",
+    adv_warn: "확신하기 어려워요. 링크를 열기보다 공식 앱이나 직접 검색으로 접속하세요.",
+    adv_danger: "피싱일 가능성이 높아요. 링크를 열지 말고, 개인정보·인증번호를 입력하지 마세요.",
+    no_reason: "눈에 띄는 위험 신호는 없어요",
+    fb_q: "이 링크, 실제로는 어땠나요?", fb_hint: "알려 주시면 판정 정확도를 높이는 데 쓰여요. 나중에 확인되면 그때 눌러도 돼요.",
+    fb_scam: "사기였어요", fb_safe: "안전했어요",
+    fb_done_scam: "사기였다고 기록했어요.", fb_done_safe: "안전했다고 기록했어요.",
+    fb_right: "판정이 맞았네요.", fb_wrong: "판정이 틀렸어요 — 다음 학습에 반영할게요.",
+    stats_title: "지금까지 검사 현황", s_checks: "검사한 링크", s_fb: "결과를 알려 준 링크", s_acc: "실제 정확도",
+    hist_title: "내 검사 기록", hist_empty: "아직 검사한 링크가 없어요.",
+    h_link: "링크", h_verdict: "판정", h_risk: "위험도", h_truth: "실제", t_scam: "사기", t_safe: "안전",
+    e_empty: "링크를 붙여 넣어 주세요.", e_format: "링크를 다시 확인해 주세요.", e_api: "서버에 연결할 수 없어요",
+  },
 };
-const CLS = { "안전": "safe", "주의": "warn", "위험": "danger" };
+const VKEY = { "安全": "safe", "注意": "warn", "危険": "danger", "안전": "safe", "주의": "warn", "위험": "danger" };
+const VERDICT_KEY = { "안전": "v_safe", "주의": "v_warn", "위험": "v_danger" };   // API는 한국어 판정명을 돌려줌
+const SAMPLES = [
+  "https://kuronekoyamato-delivery.top/jp",
+  "https://smbc-card-login.top/vpass",
+  "http://bsqzqdqykm.duckdns.org/?vjhgb",
+  "https://www.amazon.co.jp/gp/your-account",
+  "https://www.nta.go.jp",
+];
 const $ = (id) => document.getElementById(id);
-let current = null;
+let lang = "ja";
+try { lang = localStorage.getItem("lg_lang") || "ja"; } catch (e) {}
+let current = null, currentUrl = "";
 const history = [];
+
+function t(k) { return (T[lang] && T[lang][k]) || T.ja[k] || k; }
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll(".lang button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+  renderHistory();
+}
+document.querySelectorAll(".lang button").forEach((b) => b.onclick = () => {
+  lang = b.dataset.lang;
+  try { localStorage.setItem("lg_lang", lang); } catch (e) {}
+  applyLang();
+  if (currentUrl) check(currentUrl, true);
+});
 
 SAMPLES.forEach((s) => {
   const b = document.createElement("button");
@@ -154,35 +218,35 @@ async function api(path, body) {
   const res = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" },
                                          body: JSON.stringify(body) } : undefined);
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const d = data.detail;
-    throw new Error(typeof d === "string" ? d : Array.isArray(d) ? "링크를 다시 확인해 주세요." : "요청 실패 (" + res.status + ")");
-  }
+  if (!res.ok) throw new Error(res.status === 422 ? t("e_format") : t("e_api") + " (" + res.status + ")");
   return data;
 }
 function showError(msg) { $("err").textContent = msg; $("err").style.display = msg ? "block" : "none"; }
 function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 
-async function check() {
-  const url = $("url").value.trim();
-  if (!url) { showError("링크를 붙여 넣어 주세요."); return; }
+async function check(url, rerender) {
+  url = (url || $("url").value).trim();
+  if (!url) { showError(t("e_empty")); return; }
   showError(""); $("check").disabled = true;
   try {
-    const r = await api("/v1/check", { url, channel: $("channel").value });
-    current = r;
-    $("result").className = "panel result " + CLS[r.verdict];
+    const r = await api("/v1/check", { url, channel: $("channel").value, lang });
+    current = r; currentUrl = url;
+    const k = VKEY[r.verdict];
+    $("result").className = "panel result " + k;
     $("result").style.display = "block";
-    $("badge").textContent = r.verdict;
+    $("badge").textContent = t(VERDICT_KEY[r.verdict]);
     $("host").textContent = r.host;
     $("barfill").style.width = Math.max(3, r.risk * 100) + "%";
-    $("risktxt").textContent = "위험도 " + Math.round(r.risk * 100) + "%";
-    $("advice").textContent = ADVICE[r.verdict];
+    $("risktxt").textContent = t("risk") + " " + Math.round(r.risk * 100) + "%";
+    $("advice").textContent = t("adv_" + k);
     $("reasons").innerHTML = r.reasons.length ? r.reasons.map((x) => "<li>" + esc(x) + "</li>").join("")
-                                               : "<li>눈에 띄는 위험 신호는 없어요</li>";
-    $("fbrow").style.display = "flex"; $("fbdone").style.display = "none";
-    $("fb-scam").disabled = $("fb-safe").disabled = false;
-    history.unshift({ id: r.check_id, url, verdict: r.verdict, risk: r.risk, truth: "–" });
-    renderHistory(); refreshStats();
+                                               : "<li>" + esc(t("no_reason")) + "</li>";
+    if (!rerender) {
+      $("fbrow").style.display = "flex"; $("fbdone").style.display = "none";
+      $("fb-scam").disabled = $("fb-safe").disabled = false;
+      history.unshift({ id: r.check_id, url, verdict: r.verdict, risk: r.risk, truth: null });
+      renderHistory(); refreshStats();
+    }
   } catch (e) { showError(e.message); }
   finally { $("check").disabled = false; }
 }
@@ -193,19 +257,20 @@ async function report(trueLabel) {
   try {
     const r = await api("/v1/feedback", { check_id: current.check_id, true_label: trueLabel });
     $("fbrow").style.display = "none"; $("fbdone").style.display = "block";
-    $("fbdone").textContent = (trueLabel ? "사기였다고" : "안전했다고") + " 기록했어요. " +
-      (r.is_correct ? "판정이 맞았네요." : "판정이 틀렸어요 — 다음 학습에 반영할게요.");
+    $("fbdone").textContent = t(trueLabel ? "fb_done_scam" : "fb_done_safe") + " " + t(r.is_correct ? "fb_right" : "fb_wrong");
     const h = history.find((x) => x.id === current.check_id);
-    if (h) h.truth = trueLabel ? "사기" : "안전";
+    if (h) h.truth = trueLabel;
     renderHistory(); refreshStats();
   } catch (e) { showError(e.message); $("fb-scam").disabled = $("fb-safe").disabled = false; }
 }
 
 function renderHistory() {
-  if (!history.length) return;
-  $("history").innerHTML = "<table><thead><tr><th>링크</th><th>판정</th><th>위험도</th><th>실제</th></tr></thead><tbody>" +
-    history.slice(0, 20).map((h) => "<tr><td class='mono'>" + esc(h.url) + "</td><td>" + h.verdict + "</td><td>" +
-      Math.round(h.risk * 100) + "%</td><td>" + h.truth + "</td></tr>").join("") + "</tbody></table>";
+  if (!history.length) { $("history").innerHTML = "<p class='empty'>" + esc(t("hist_empty")) + "</p>"; return; }
+  $("history").innerHTML = "<table><thead><tr><th>" + t("h_link") + "</th><th>" + t("h_verdict") + "</th><th>" + t("h_risk") +
+    "</th><th>" + t("h_truth") + "</th></tr></thead><tbody>" +
+    history.slice(0, 20).map((h) => "<tr><td class='mono'>" + esc(h.url) + "</td><td>" + t(VERDICT_KEY[h.verdict]) + "</td><td>" +
+      Math.round(h.risk * 100) + "%</td><td>" + (h.truth === null ? "–" : t(h.truth ? "t_scam" : "t_safe")) + "</td></tr>").join("") +
+    "</tbody></table>";
 }
 
 async function refreshStats() {
@@ -216,12 +281,14 @@ async function refreshStats() {
   } catch (e) { /* 통계 실패는 화면을 막지 않음 */ }
 }
 
-$("check").onclick = check;
+$("check").onclick = () => check();
 $("url").addEventListener("keydown", (e) => { if (e.key === "Enter") check(); });
 $("fb-scam").onclick = () => report(1);
 $("fb-safe").onclick = () => report(0);
-api("/health").then((h) => { $("model").textContent = "model " + h.model_version + " · logs: " + h.log_sinks.join(", "); })
-  .catch(() => { $("model").textContent = "API 연결 실패"; });
+applyLang();
+api("/health").then((h) => {
+  $("meta").textContent = "app " + h.app_version + " · model " + h.model_version + " · brands " + h.brand_region + " · logs: " + h.log_sinks.join(", ");
+}).catch(() => { $("meta").textContent = "API ✕"; });
 refreshStats();
 </script>
 </body>

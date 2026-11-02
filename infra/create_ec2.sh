@@ -86,6 +86,25 @@ aws s3api head-bucket --bucket "$BUCKET" 2>/dev/null || {
   else aws s3api create-bucket --bucket "$BUCKET" --create-bucket-configuration LocationConstraint="$REGION" >/dev/null; fi
 } || echo "S3 버킷을 만들지 못했어요 (권한 없음) — 서비스에는 영향 없음"
 
+# 5) 고정 IP (Elastic IP) — EC2를 새로 만들어도 같은 주소로 접속되게, 이름표로 찾아 다시 붙인다
+if [ "$USE_EIP" = 1 ]; then
+  ALLOC_ID=$(aws ec2 describe-addresses --filters "Name=tag:Name,Values=$NAME-eip" \
+             --query 'Addresses[0].AllocationId' --output text)
+  if [ "$ALLOC_ID" = "None" ]; then
+    ALLOC_ID=$(aws ec2 allocate-address --domain vpc \
+      --tag-specifications "ResourceType=elastic-ip,Tags=[{Key=Name,Value=$NAME-eip}]" \
+      --query AllocationId --output text) || ALLOC_ID=None
+    [ "$ALLOC_ID" != "None" ] && echo "고정 IP 새로 발급: $ALLOC_ID"
+  fi
+  if [ "$ALLOC_ID" != "None" ] &&
+     aws ec2 associate-address --instance-id "$INSTANCE_ID" --allocation-id "$ALLOC_ID" --allow-reassociation >/dev/null; then
+    IP=$(aws ec2 describe-addresses --allocation-ids "$ALLOC_ID" --query 'Addresses[0].PublicIp' --output text)
+    echo "고정 IP 연결: $IP"
+  else
+    echo "⚠️ 고정 IP를 쓸 수 없어 자동 배정 IP($IP)를 사용합니다 (권한 확인 필요)"
+  fi
+fi
+
 # infra/up.sh가 읽는 결과
 cat > infra/.ec2.env <<EOF
 INSTANCE_ID=$INSTANCE_ID

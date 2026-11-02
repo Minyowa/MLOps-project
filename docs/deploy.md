@@ -56,6 +56,7 @@ cd MLOps-project && bash infra/up.sh
 - 처음 실행하면 GitHub 로그인 코드가 나옵니다. https://github.com/login/device 에 입력하면 됩니다 (CloudShell 홈이 초기화되면 다시 로그인).
 - **왜 Actions가 EC2까지 만들지 않나**: 학생 계정은 IAM 역할(OIDC)을 만들 수 없고 자격 증명도 초기화되어, AWS 키를 GitHub에 둘 수 없습니다. 이미 로그인된 CloudShell에서 한 번 실행하는 방식이 가장 안전합니다.
 - 이미지 저장소(GHCR)는 GitHub에 있어서 AWS가 초기화돼도 남아 있습니다.
+- **고정 주소**: `USE_EIP=1`(기본)이면 `linkguard-eip` 이름표가 붙은 Elastic IP를 찾아 새 EC2에 다시 붙입니다. 계정 초기화 때 EC2만 지워지고 Elastic IP가 남으면 주소가 매주 같습니다. Elastic IP까지 지워지거나 권한이 없으면 자동 배정 IP로 진행하고 경고를 출력합니다. (공인 IPv4 요금은 EC2에 붙어 있든 아니든 시간당 약 0.005달러)
 
 ## 3. 배포 자동화 — 방법 A: GitHub Actions (`.github/workflows/ci-cd.yml`)
 

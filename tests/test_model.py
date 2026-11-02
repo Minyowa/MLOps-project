@@ -37,3 +37,10 @@ def test_reputation_list_excludes_phishing_hosts():
     assert "naver.com" in rep
     assert not {"duckdns.org", "blogspot.com", "github.io", "weebly.com"} & rep
     assert M["service_with_rules"]["phishing_passed_by_rules"] < 50
+
+
+def test_korean_services_and_impersonation():
+    k = json.loads((ROOT / "models" / "metrics_korea.json").read_text())
+    assert k["korean_services"]["service_not_safe"] == []
+    assert k["impersonation_examples"]["service_danger"] == k["impersonation_examples"]["n"]
+    assert k["service_with_rules"]["false_alarm_rate"] <= 0.05

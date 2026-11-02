@@ -40,6 +40,7 @@ def test_health_and_ui():
 @pytest.mark.parametrize("p,verdict,label", [(0.9, "위험", 1), (0.5, "주의", 1), (0.1, "안전", 0)])
 def test_verdict_levels(monkeypatch, p, verdict, label):
     monkeypatch.setattr(main, "_model", Stub(p))
+    monkeypatch.setattr(main, "REPUTABLE", set())
     r = client.post("/v1/check", json={"url": "https://example.top/abc"}).json()
     assert r["verdict"] == verdict and r["label_id"] == label and r["stage"] == "model"
 
@@ -100,8 +101,12 @@ def test_log_failure_does_not_break_api(monkeypatch):
 
 def test_reputable_domain_rule(monkeypatch):
     monkeypatch.setattr(main, "_model", Stub(0.99))
-    monkeypatch.setattr(main, "REPUTABLE", {"coupang.com"})
-    r = client.post("/v1/check", json={"url": "https://www.coupang.com/vp/products/1"}).json()
+    monkeypatch.setattr(main, "REPUTABLE", {"musinsa.com"})
+    r = client.post("/v1/check", json={"url": "https://www.musinsa.com/products/1"}).json()
     assert r["verdict"] == "안전" and r["stage"] == "reputable_domain"
+    r1 = client.post("/v1/check", json={"url": "https://www.coupang.com/vp/products/1"}).json()
+    assert r1["verdict"] == "안전" and r1["stage"] == "official_brand"
+    monkeypatch.setattr(main, "_model", Stub(0.2))
     r2 = client.post("/v1/check", json={"url": "https://coupang.com.evil.top/login"}).json()
-    assert r2["verdict"] == "위험" and r2["stage"] == "model"      # 이름만 흉내 낸 가짜는 통과 못 함
+    assert r2["verdict"] == "위험" and r2["stage"] == "brand_impersonation"   # 이름만 흉내 낸 가짜
+    assert any("쿠팡" in x for x in r2["reasons"])

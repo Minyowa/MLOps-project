@@ -1,0 +1,281 @@
+{
+  "target": "인기 사이트 목록의 .kr 도메인 중 학습에 쓰지 않은 것 (모두 정상 사이트)",
+  "n": 55,
+  "model_only": {
+    "false_alarm_rate": 0.0,
+    "verdicts": {
+      "안전": 0.9455,
+      "주의": 0.0545,
+      "위험": 0.0
+    }
+  },
+  "service_with_rules": {
+    "false_alarm_rate": 0.0,
+    "verdicts": {
+      "안전": 0.9636,
+      "주의": 0.0364,
+      "위험": 0.0
+    }
+  },
+  "examples_flagged": [],
+  "korean_services": {
+    "n": 26,
+    "model_only_not_safe": [
+      "https://m.blog.naver.com/abc/223456789",
+      "https://open.kakao.com/o/sAbCdE",
+      "https://pf.kakao.com/_xabc",
+      "https://www.shinhan.com",
+      "https://m.kakaobank.com",
+      "https://www.coupang.com/vp/products/123456",
+      "https://www.cjlogistics.com/ko/tool/parcel/tracking"
+    ],
+    "service_not_safe": [],
+    "rows": [
+      {
+        "url": "https://www.naver.com",
+        "model_risk": 0.043,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://m.blog.naver.com/abc/223456789",
+        "model_risk": 0.628,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://www.daum.net",
+        "model_risk": 0.129,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "reputable_domain"
+      },
+      {
+        "url": "https://open.kakao.com/o/sAbCdE",
+        "model_risk": 0.961,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://pf.kakao.com/_xabc",
+        "model_risk": 0.836,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://www.kbstar.com",
+        "model_risk": 0.08,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://www.shinhan.com",
+        "model_risk": 0.359,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://www.wooribank.com",
+        "model_risk": 0.06,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://www.hanabank.com",
+        "model_risk": 0.085,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://m.kakaobank.com",
+        "model_risk": 0.33,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://www.tossbank.com",
+        "model_risk": 0.049,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://toss.im",
+        "model_risk": 0.288,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://www.coupang.com/vp/products/123456",
+        "model_risk": 0.302,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://www.11st.co.kr",
+        "model_risk": 0.059,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "reputable_domain"
+      },
+      {
+        "url": "https://www.gmarket.co.kr",
+        "model_risk": 0.072,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "reputable_domain"
+      },
+      {
+        "url": "https://www.baemin.com",
+        "model_risk": 0.032,
+        "service_risk": 0.032,
+        "verdict": "안전",
+        "stage": "model"
+      },
+      {
+        "url": "https://www.musinsa.com/products/123",
+        "model_risk": 0.01,
+        "service_risk": 0.01,
+        "verdict": "안전",
+        "stage": "model"
+      },
+      {
+        "url": "https://www.cjlogistics.com/ko/tool/parcel/tracking",
+        "model_risk": 0.966,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://www.epost.go.kr",
+        "model_risk": 0.101,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_domain"
+      },
+      {
+        "url": "https://www.lotteglogis.com",
+        "model_risk": 0.076,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://www.tworld.co.kr",
+        "model_risk": 0.024,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://www.kt.com",
+        "model_risk": 0.118,
+        "service_risk": 0.118,
+        "verdict": "안전",
+        "stage": "model"
+      },
+      {
+        "url": "https://www.gov.kr",
+        "model_risk": 0.007,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_domain"
+      },
+      {
+        "url": "https://www.hometax.go.kr",
+        "model_risk": 0.063,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_domain"
+      },
+      {
+        "url": "https://www.nhis.or.kr",
+        "model_risk": 0.05,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand"
+      },
+      {
+        "url": "https://www.minwon.go.kr",
+        "model_risk": 0.028,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_domain"
+      }
+    ]
+  },
+  "impersonation_examples": {
+    "n": 8,
+    "model_only_danger": 8,
+    "service_danger": 8,
+    "rows": [
+      {
+        "url": "https://cjlogistics-delivery.top/kr",
+        "model_risk": 0.965,
+        "service_risk": 0.965,
+        "verdict": "위험",
+        "stage": "brand_impersonation"
+      },
+      {
+        "url": "http://epost-kr.cfd/?info=x",
+        "model_risk": 1.0,
+        "service_risk": 1.0,
+        "verdict": "위험",
+        "stage": "brand_impersonation"
+      },
+      {
+        "url": "https://kakaobank-login.top",
+        "model_risk": 1.0,
+        "service_risk": 1.0,
+        "verdict": "위험",
+        "stage": "brand_impersonation"
+      },
+      {
+        "url": "https://shinhancard-pay.cc/verify",
+        "model_risk": 0.997,
+        "service_risk": 0.997,
+        "verdict": "위험",
+        "stage": "brand_impersonation"
+      },
+      {
+        "url": "https://coupang-event.shop/gift?id=1",
+        "model_risk": 0.98,
+        "service_risk": 0.98,
+        "verdict": "위험",
+        "stage": "brand_impersonation"
+      },
+      {
+        "url": "https://naver.com.verify.top/login",
+        "model_risk": 1.0,
+        "service_risk": 1.0,
+        "verdict": "위험",
+        "stage": "brand_impersonation"
+      },
+      {
+        "url": "https://toss-event.shop",
+        "model_risk": 0.996,
+        "service_risk": 0.996,
+        "verdict": "위험",
+        "stage": "brand_impersonation"
+      },
+      {
+        "url": "https://hometax-refund.xyz",
+        "model_risk": 0.997,
+        "service_risk": 0.997,
+        "verdict": "위험",
+        "stage": "brand_impersonation"
+      }
+    ]
+  }
+}

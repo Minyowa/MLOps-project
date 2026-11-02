@@ -31,7 +31,8 @@ from sklearn.pipeline import make_pipeline
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from linkguard.features import host_of, is_official, normalize, registered_domain  # noqa: E402
+from linkguard.features import host_of, normalize, registered_domain  # noqa: E402
+from linkguard.policy import decide  # noqa: E402
 
 SEED = 0
 CUTOFF_YEAR = 2023      # 이 해까지의 피싱은 학습, 이후는 평가
@@ -123,10 +124,13 @@ def main():
     print(f"평판 도메인 {len(reputable):,}개 (피싱 이력으로 제외 {len(ranked & phish_history)}개)")
 
     # 서비스 전체(규칙 + 모델) 평가
-    p = models[final].predict(test.norm)
-    rule_safe = test.norm.map(is_official).values | test.dom.isin(set(reputable)).values
-    service = metrics(test.y, (p * ~rule_safe).astype(int))
-    service["phishing_passed_by_rules"] = int((rule_safe & (test.y.values == 1)).sum())
+    rep_set = set(reputable)
+    model_risk = models[final].predict_proba(test.norm)[:, 1]
+    decisions = [decide(u, r, rep_set) for u, r in zip(test.norm, model_risk)]
+    service = metrics(test.y, [int(d.risk >= 0.5) for d in decisions])
+    rule_safe = [d.stage in ("official_domain", "official_brand", "reputable_domain") for d in decisions]
+    service["phishing_passed_by_rules"] = int(sum(s and y == 1 for s, y in zip(rule_safe, test.y)))
+    service["stage_counts"] = pd.Series([d.stage for d in decisions]).value_counts().to_dict()
     print(f"  서비스 전체(규칙+모델) 정확도={service['accuracy']:.3f} 사기탐지율={service['recall_phishing']:.3f} "
           f"오탐={service['false_alarm_rate']:.3f} 규칙으로 통과된 사기={service['phishing_passed_by_rules']}")
 

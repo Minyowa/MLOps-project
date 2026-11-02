@@ -2,7 +2,7 @@
   "task": "링크 하나 → 피싱/악성(1) vs 정상(0)",
   "eval_set": "JPCERT 2024년 이후 피싱(학습에 없던 사이트) 19896 + 학습에 없던 정상 19896",
   "selected": "D_plus_recent_phishing_and_popular_sites",
-  "model_version": "char3-5_lr@20261026-182114",
+  "model_version": "char3-5_lr@20261102-160032",
   "results": {
     "A_2017_only": {
       "accuracy": 0.7884,
@@ -81,7 +81,12 @@
       "fn": 2468,
       "tp": 17428
     },
-    "phishing_passed_by_rules": 9
+    "phishing_passed_by_rules": 9,
+    "stage_counts": {
+      "model": 34238,
+      "reputable_domain": 5492,
+      "official_domain": 62
+    }
   },
   "reputation": {
     "top_k": 10000,

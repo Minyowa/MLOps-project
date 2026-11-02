@@ -23,9 +23,9 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, model_validator
 
-from linkguard.features import (extract, host_of, is_official, load_reputable, normalize, reasons, redact,
-                                registered_domain)
+from linkguard.features import host_of, load_reputable, normalize, redact
 from linkguard.logsink import EventLogger
+from linkguard.policy import decide
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = Path(os.getenv("MODEL_PATH", ROOT / "models" / "model.joblib"))
@@ -59,7 +59,7 @@ class CheckResponse(BaseModel):
     verdict: Literal["안전", "주의", "위험"]
     label_id: Literal[0, 1] = Field(..., description="1=피싱·악성, 0=정상 (기준 0.5)")
     risk: float = Field(..., description="피싱·악성일 확률")
-    stage: Literal["official_domain", "reputable_domain", "model"]
+    stage: Literal["official_domain", "official_brand", "reputable_domain", "brand_impersonation", "model"]
     host: str
     reasons: list[str]
     model_version: str
@@ -102,14 +102,8 @@ def check(req: CheckRequest, bg: BackgroundTasks):
 
     t0 = time.perf_counter()
     model_risk = float(_model.predict_proba([norm])[0][1])
-    if is_official(norm):
-        risk, stage, why = 0.0, "official_domain", ["정부·공공기관 전용 도메인이에요 (개인이 등록할 수 없음)"]
-    elif registered_domain(host) in REPUTABLE:
-        risk, stage, why = 0.0, "reputable_domain", [
-            "많은 사람이 쓰는 사이트예요 (인기 상위 1만, 피싱 이력 없음). 단, 사이트 안의 글·채팅 내용까지 보장하지는 않아요"]
-    else:
-        risk, stage = model_risk, "model"
-        why = reasons(extract(norm))
+    d = decide(norm, model_risk, REPUTABLE)          # 규칙 + 모델 (linkguard/policy.py)
+    risk, stage, why = d.risk, d.stage, d.reasons
     latency_ms = round((time.perf_counter() - t0) * 1000, 2)
     label_id = int(risk >= 0.5)
     cid = uuid.uuid4().hex

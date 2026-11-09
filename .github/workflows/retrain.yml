@@ -10,7 +10,7 @@ name: retrain
 
 on:
   push:
-    paths: ["data/feedback/**"]
+    paths: ["data/feedback/**", "scripts/train.py"]
   workflow_dispatch:
 
 permissions:
@@ -67,6 +67,9 @@ jobs:
               print(f"\n**고쳐진 주소**: {', '.join(f['fixed']) or '-'}\n")
               print(f"**여전히 틀림**: {', '.join(f['still_wrong']) or '-'}\n")
               print(f"**새로 틀림**: {', '.join(f['broken']) or '-'}\n")
+          if f:
+              print(f"**검토 대상(자동 반영 제외)**: {', '.join(f.get('quarantined', [])) or '-'}\n")
+          print(f"카나리: {'✅ 모두 통과' if not g.get('canary_failed') else '❌ ' + '; '.join(g['canary_failed'])}\n")
           print(f"품질 게이트: {'✅ 통과' if g['passed'] else '❌ 실패'} (허용 오차 {g['tolerance']})")
           EOF
           cat "$GITHUB_STEP_SUMMARY"

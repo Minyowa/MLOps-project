@@ -12,9 +12,14 @@
   D) C + 인기 사이트 10만 개 (요즘 정상 사이트)
   E) D + 서비스 사용자 신고 데이터 (data/feedback/*.csv) ← 신고 데이터가 있으면 최종
 
-재학습 품질 게이트
-  직전 모델(models/metrics.json)보다 현실 평가셋에서 서비스 정확도가 GATE_TOLERANCE 넘게 떨어지거나
-  오탐률이 GATE_TOLERANCE 넘게 오르면 모델 파일을 바꾸지 않고 실패(exit 1) → 배포되지 않는다.
+신고 데이터 오염 방지
+  · 인기 사이트(상위 REPUTATION_TOP_K)를 '사기'로 신고한 것, 피싱 이력 도메인을 '안전'으로 신고한 것은
+    자동 반영하지 않고 검토 대상(quarantined)으로 뺀다. 예: google.com/search 를 사기로 신고 → 구글 검색 전체가 위험해짐
+
+재학습 품질 게이트 — 하나라도 어기면 모델 파일을 바꾸지 않고 실패(exit 1) → 배포되지 않는다
+  1. 현실 평가셋 서비스 정확도가 직전 모델보다 GATE_TOLERANCE 넘게 떨어지거나 오탐률이 GATE_TOLERANCE 넘게 오름
+  2. 카나리: 반드시 안전이어야 하는 주소(CANARY_SAFE)를 모델이 위험(≥0.5)으로 보거나,
+     반드시 잡아야 하는 주소(CANARY_SCAM)를 안전(<0.5)으로 봄. 평가셋 평균에 묻히는 개별 주소 붕괴를 잡는다
 
 사용법: python scripts/download_data.py && python scripts/train.py
 """
@@ -46,7 +51,17 @@ TEST_PER_CLASS = 20_000
 MAX_FEATURES = 200_000
 REPUTATION_TOP_K = 10_000
 FEEDBACK_WEIGHT = 100         # 신고 1건의 가중치. 78만 건 사이에서 신고 수십 건이 묻히지 않게 (가중치 실험: README)
-GATE_TOLERANCE = 0.01   # 인기 상위 N개 도메인을 '평판 좋은 사이트'로 (피싱 이력 있으면 제외)
+GATE_TOLERANCE = 0.01
+CANARY_SAFE = [
+    "https://www.google.com/search?q=weather", "https://www.google.co.jp/search?q=天気",
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "https://www.naver.com", "https://search.naver.com/search.naver?query=x",
+    "https://www.yahoo.co.jp", "https://www.amazon.co.jp/dp/B0C1234567", "https://github.com/torvalds/linux",
+    "https://ja.wikipedia.org/wiki/東京", "https://www.instagram.com/", "https://x.com/home",
+]
+CANARY_SCAM = [
+    "https://kuronekoyamato-delivery.top/jp", "https://smbc-card-login.top/vpass", "http://bsqzqdqykm.duckdns.org/?vjhgb",
+    "https://amazon-co-jp-login.top/signin", "https://naver-login-secure.xyz/nid",
+]   # 인기 상위 N개 도메인을 '평판 좋은 사이트'로 (피싱 이력 있으면 제외)
 
 
 def domain(norm_url: str) -> str:
@@ -84,6 +99,27 @@ def load_feedback() -> pd.DataFrame:
     fb = fb.drop_duplicates("norm", keep="last")
     fb["y"] = fb["label"].astype(int)
     return fb
+
+
+def quarantine(fb: pd.DataFrame, popular: set[str], phishing: set[str]) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """사람 검토 대상으로 분리할 신고.
+    · 인기 사이트 '본체'를 사기로 신고 (google.com/search, pornhub.com …)
+      — 인기 호스팅의 하위 주소(xxx.weebly.com, xxx.blogspot.com)는 실제 피싱이 많아 그대로 반영
+    · 인기 사이트가 아닌 피싱 이력 도메인을 안전으로 신고 (github.com, instagram.com 같은 인기 사이트는 반영)
+    """
+    host = fb.norm.map(host_of).str.removeprefix("www.")
+    apex = host == fb.dom
+    bad = (((fb.y == 1) & fb.dom.isin(popular) & apex) |
+           ((fb.y == 0) & fb.dom.isin(phishing) & ~fb.dom.isin(popular)))
+    return fb[~bad], fb[bad]
+
+
+def canaries(model) -> list[str]:
+    """반드시 지켜야 하는 개별 주소 판정. 어긴 주소 목록을 돌려준다."""
+    safe = model.predict_proba([normalize(u) for u in CANARY_SAFE])[:, 1]
+    scam = model.predict_proba([normalize(u) for u in CANARY_SCAM])[:, 1]
+    return ([f"안전이어야 함 {u} ({r:.2f})" for u, r in zip(CANARY_SAFE, safe) if r >= 0.5] +
+            [f"위험이어야 함 {u} ({r:.2f})" for u, r in zip(CANARY_SCAM, scam) if r < 0.5])
 
 
 def fit(train: pd.DataFrame):
@@ -132,6 +168,15 @@ def main():
         "C_plus_recent_phishing": pd.concat([old_tr, jp_tr]),
         "D_plus_recent_phishing_and_popular_sites": pd.concat([old_tr, jp_tr, top_tr]),
     }
+    # 신고 데이터 오염 방지 (평판 목록 계산과 같은 기준: 인기 상위 K, 학습 데이터의 피싱 이력)
+    phish_history = set(jp_tr.dom) | set(old_tr[old_tr.y == 1].dom)
+    ranked = set(top["d"].head(REPUTATION_TOP_K).str.lower().map(registered_domain))
+    quarantined = fb.iloc[0:0]
+    if len(fb):
+        fb["dom"] = fb["norm"].map(domain)
+        fb, quarantined = quarantine(fb, ranked, phish_history)
+        print(f"  신고 검토 대상(자동 반영 제외) {len(quarantined)}개: {', '.join(quarantined.url.head(15))}"
+              f"{' …' if len(quarantined) > 15 else ''}")
     if len(fb):
         combos["E_plus_user_feedback"] = pd.concat([combos["D_plus_recent_phishing_and_popular_sites"],
                                                     fb.assign(w=FEEDBACK_WEIGHT)])
@@ -154,7 +199,7 @@ def main():
     if len(fb):
         after = (models[final].predict_proba(fb.norm)[:, 1] >= 0.5).astype(int)
         before = (prev_model.predict_proba(fb.norm)[:, 1] >= 0.5).astype(int) if prev_model else fb["pred_label"]
-        feedback = {"n": int(len(fb)), "files": sorted(fb["file"].unique()), "weight": FEEDBACK_WEIGHT,
+        feedback = {"quarantined": sorted(quarantined.url), "n": int(len(fb)), "files": sorted(fb["file"].unique()), "weight": FEEDBACK_WEIGHT,
                     "before_correct": int((before == fb.y).sum()), "after_correct": int((after == fb.y).sum()),
                     "fixed": sorted(fb.url[(before != fb.y) & (after == fb.y)]),
                     "still_wrong": sorted(fb.url[after != fb.y]),
@@ -163,8 +208,6 @@ def main():
               f" (고쳐짐 {len(feedback['fixed'])}, 여전히 틀림 {len(feedback['still_wrong'])}, 새로 틀림 {len(feedback['broken'])})")
 
     # 평판 도메인 목록: 인기 상위 K개 - 학습 데이터에서 피싱이 올라간 적 있는 도메인(무료 호스팅 등)
-    phish_history = set(jp_tr.dom) | set(old_tr[old_tr.y == 1].dom)
-    ranked = set(top["d"].head(REPUTATION_TOP_K).str.lower().map(registered_domain))
     reputable = sorted(ranked - phish_history)
     print(f"평판 도메인 {len(reputable):,}개 (피싱 이력으로 제외 {len(ranked & phish_history)}개)")
 
@@ -180,7 +223,9 @@ def main():
           f"오탐={service['false_alarm_rate']:.3f} 규칙으로 통과된 사기={service['phishing_passed_by_rules']}")
 
     # 품질 게이트: 직전 모델보다 현실 평가셋 성능이 떨어지면 저장하지 않는다
-    gate = {"tolerance": GATE_TOLERANCE, "passed": True}
+    gate = {"tolerance": GATE_TOLERANCE, "passed": True, "canary_failed": canaries(models[final])}
+    print(f"  카나리 {len(CANARY_SAFE) + len(CANARY_SCAM)}개: " +
+          ("모두 통과" if not gate["canary_failed"] else "실패 → " + "; ".join(gate["canary_failed"])))
     if baseline:
         b = baseline["service_with_rules"]
         gate.update({"baseline_version": baseline["model_version"],
@@ -191,6 +236,7 @@ def main():
         print(f"  품질 게이트: 정확도 {b['accuracy']:.4f} → {service['accuracy']:.4f}, "
               f"오탐 {b['false_alarm_rate']:.4f} → {service['false_alarm_rate']:.4f} "
               f"→ {'통과' if gate['passed'] else '실패'}")
+    gate["passed"] = gate["passed"] and not gate["canary_failed"]
     if not gate["passed"]:
         sys.exit("❌ 품질 게이트 실패: 직전 모델보다 나빠져서 모델을 바꾸지 않습니다")
 

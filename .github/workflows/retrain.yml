@@ -1,0 +1,91 @@
+# LinkGuard 재학습 파이프라인
+#   신고 데이터(data/feedback/*.csv)가 push되면:
+#   학습 데이터 준비 → 재학습(신고 데이터 포함) → 품질 게이트 → 일본 관점 평가 → 테스트
+#   → 새 모델 커밋 → ci-cd 워크플로로 배포 (이미지 빌드 → EC2 → /health 확인)
+#
+#   신고 데이터는 CloudShell에서 만든다:
+#     aws logs filter-log-events --log-group-name /linkguard/app --output json > logs/cloudwatch.json
+#     python3 scripts/prepare_feedback.py logs/cloudwatch.json && git add data/feedback && git commit && git push
+name: retrain
+
+on:
+  push:
+    paths: ["data/feedback/**", "scripts/train.py"]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # 새 모델 커밋
+  actions: write    # ci-cd 배포 실행
+
+concurrency:
+  group: retrain-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+
+      - name: 학습 데이터 캐시
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/urls.csv
+            data/top100k.txt
+            data/jpcert
+          key: train-data-${{ hashFiles('scripts/download_data.py') }}
+      - name: 학습 데이터 내려받기 (JPCERT·2017 URL·인기 사이트)
+        run: python scripts/download_data.py
+
+      - name: 재학습 + 품질 게이트
+        run: python scripts/train.py 2>&1 | tee train.log; exit "${PIPESTATUS[0]}"
+      - name: 일본 관점 평가
+        run: python scripts/evaluate_japan.py
+      - name: 테스트 (모델 품질 회귀 포함)
+        run: pytest -q
+
+      - name: 결과 요약
+        run: |
+          python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          m = json.load(open("models/metrics.json"))
+          g, f, s = m["gate"], m["feedback"], m["service_with_rules"]
+          print(f"## 재학습 결과 `{m['model_version']}`\n")
+          print("| 항목 | 직전 모델 | 새 모델 |\n|---|---|---|")
+          if "accuracy" in g:
+              print(f"| 현실 평가셋 서비스 정확도 | {g['accuracy'][0]:.4f} | {g['accuracy'][1]:.4f} |")
+              print(f"| 오탐률 | {g['false_alarm_rate'][0]:.4f} | {g['false_alarm_rate'][1]:.4f} |")
+          if f:
+              print(f"| 신고 주소 정답 수 | {f['before_correct']}/{f['n']} | {f['after_correct']}/{f['n']} |")
+              print(f"\n**고쳐진 주소**: {', '.join(f['fixed']) or '-'}\n")
+              print(f"**여전히 틀림**: {', '.join(f['still_wrong']) or '-'}\n")
+              print(f"**새로 틀림**: {', '.join(f['broken']) or '-'}\n")
+          if f:
+              print(f"**검토 대상(자동 반영 제외)**: {', '.join(f.get('quarantined', [])) or '-'}\n")
+          print(f"카나리: {'✅ 모두 통과' if not g.get('canary_failed') else '❌ ' + '; '.join(g['canary_failed'])}\n")
+          print(f"품질 게이트: {'✅ 통과' if g['passed'] else '❌ 실패'} (허용 오차 {g['tolerance']})")
+          EOF
+          cat "$GITHUB_STEP_SUMMARY"
+
+      - name: 새 모델 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add models/
+          VERSION=$(python -c "import json;print(json.load(open('models/metrics.json'))['model_version'])")
+          git commit -m "model: 신고 데이터로 재학습 ($VERSION) [retrain]"
+          git push
+
+      - name: 배포 실행 (ci-cd)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci-cd.yml --ref "$GITHUB_REF_NAME" -f deploy=true
+          echo "배포: https://github.com/$GITHUB_REPOSITORY/actions/workflows/ci-cd.yml"

@@ -91,6 +91,30 @@ S3_BUCKET=<버킷> bash infra/deploy.sh <브랜치>   # AWS CLI + SSH 배포 →
 - **GitHub Actions** (`.github/workflows/ci-cd.yml`): PR마다 테스트 → 이미지 빌드 → 컨테이너 스모크 테스트. main push 또는 수동 실행 시 GHCR 푸시 → EC2 배포 → 배포 버전 확인
 - 인프라: EC2(Amazon Linux 2023, 도쿄 리전) 1대 + Docker Compose, 인스턴스 프로필로 CloudWatch·S3 기록 (키를 서버에 두지 않음)
 
+## 6-1. 신고 로그 → 재학습 → 재배포 (`.github/workflows/retrain.yml`)
+
+```
+사용자 신고(詐欺だった/安全だった) → CloudWatch /linkguard/app
+  → CloudShell: aws logs filter-log-events … > logs/cloudwatch.json
+  → python3 scripts/prepare_feedback.py logs/cloudwatch.json   (check+feedback 결합, 장난 주소 제외, 다수결)
+  → data/feedback/feedback_YYYYMMDD.csv push
+  → Actions retrain: 재학습(E = D + 신고, 가중치 100) → 품질 게이트 → 일본 관점 평가 → 테스트 → 모델 커밋 → ci-cd 배포
+```
+
+| 신고 가중치 | 현실 평가셋 정확도 | 오탐 | 신고 37개 중 정답 |
+|---|---|---|---|
+| 0 (신고 미반영) | 0.915 | 4.2% | 28 |
+| 20 | 0.916 | 4.5% | 36 |
+| **100 (채택)** | **0.919** | **3.7%** | **37** |
+| 300 | 0.910 | 4.5% | 37 |
+
+- **품질 게이트**: 직전 모델보다 서비스 정확도가 1%p 넘게 떨어지거나 오탐이 1%p 넘게 오르면 모델을 바꾸지 않고 실패 → 배포 안 됨
+- **신고 오염 방지 (11/9 사고 후 추가)**: 누군가 `google.com/search`를 사기로 신고 → 재학습 모델이 구글 검색을 54~89%로 판정했는데, 평가셋 평균엔 티가 안 나 게이트를 통과해 배포됨
+  - **검역**: 인기 사이트 본체를 사기로, 인기 사이트가 아닌 피싱 이력 도메인을 안전으로 신고한 건은 학습 제외 → 검토 대상 (이번 13건: 구글 검색, 성인 사이트, bit.ly)
+  - **카나리**: 반드시 안전 11개(구글 검색·유튜브·네이버 …) / 반드시 위험 5개를 하나라도 어기면 배포 차단. 사고 난 모델에 돌리면 2개 실패로 차단됨
+  - 결과: 서비스 정확도 0.9194 → 0.9212, 오탐 3.65% → 3.35%, 카나리 16/16 통과
+- 신고 주소 정답 수는 학습에 넣은 데이터라 **반영 확인용**이지 일반화 성능이 아닙니다. 예: 신고한 `gooogle.com`은 고쳐지지만 처음 보는 `gogle.com`은 여전히 못 잡음 → 오타 사칭은 규칙이 필요
+
 ## 7. 개발
 
 ```bash

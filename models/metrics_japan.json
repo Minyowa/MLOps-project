@@ -3,25 +3,25 @@
     "n_phishing_2024_plus": 114556,
     "flagged_as_impersonation": 0.0817,
     "brand_matches_jpcert_label": 0.9743,
-    "recall_model_only": 0.8939,
-    "recall_service": 0.8959,
+    "recall_model_only": 0.892,
+    "recall_service": 0.8943,
     "passed_as_official_brand": 0
   },
   "popular_jp_sites": {
     "n": 558,
     "model_only": {
-      "false_alarm_rate": 0.043,
+      "false_alarm_rate": 0.0502,
       "verdicts": {
-        "안전": 0.9068,
-        "주의": 0.0753,
-        "위험": 0.0179
+        "안전": 0.8978,
+        "주의": 0.0824,
+        "위험": 0.0197
       }
     },
     "service": {
-      "false_alarm_rate": 0.0376,
+      "false_alarm_rate": 0.043,
       "verdicts": {
-        "안전": 0.9211,
-        "주의": 0.0609,
+        "안전": 0.9122,
+        "주의": 0.0699,
         "위험": 0.0179
       }
     }
@@ -53,35 +53,35 @@
     "rows": [
       {
         "url": "https://www.amazon.co.jp/gp/your-account",
-        "model_risk": 0.794,
+        "model_risk": 0.741,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.rakuten.co.jp",
-        "model_risk": 0.889,
+        "model_risk": 0.82,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://jp.mercari.com",
-        "model_risk": 0.989,
+        "model_risk": 0.987,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.yahoo.co.jp",
-        "model_risk": 0.001,
+        "model_risk": 0.003,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "reputable_domain"
       },
       {
         "url": "https://line.me/ja/",
-        "model_risk": 0.151,
+        "model_risk": 0.186,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "reputable_domain"
@@ -95,119 +95,119 @@
       },
       {
         "url": "https://www.jcb.co.jp",
-        "model_risk": 0.713,
+        "model_risk": 0.773,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.saisoncard.co.jp",
-        "model_risk": 0.706,
+        "model_risk": 0.816,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.aeon.co.jp",
-        "model_risk": 0.936,
+        "model_risk": 0.905,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.eposcard.co.jp",
-        "model_risk": 0.767,
+        "model_risk": 0.887,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://paypay.ne.jp",
-        "model_risk": 0.814,
+        "model_risk": 0.777,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.bk.mufg.jp",
-        "model_risk": 0.996,
+        "model_risk": 0.994,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.mizuhobank.co.jp",
-        "model_risk": 0.499,
+        "model_risk": 0.587,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.jabank.org",
-        "model_risk": 0.02,
+        "model_risk": 0.027,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://toi.kuronekoyamato.co.jp/cgi-bin/tneko",
-        "model_risk": 0.998,
+        "model_risk": 0.996,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.sagawa-exp.co.jp",
-        "model_risk": 0.33,
+        "model_risk": 0.477,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.post.japanpost.jp",
-        "model_risk": 0.785,
+        "model_risk": 0.728,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.docomo.ne.jp",
-        "model_risk": 0.872,
+        "model_risk": 0.847,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.au.com",
-        "model_risk": 0.126,
+        "model_risk": 0.158,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.softbank.jp",
-        "model_risk": 0.895,
+        "model_risk": 0.907,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.tepco.co.jp",
-        "model_risk": 0.112,
+        "model_risk": 0.214,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.eki-net.com",
-        "model_risk": 0.999,
+        "model_risk": 0.998,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.etc-meisai.jp",
-        "model_risk": 0.993,
+        "model_risk": 0.99,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
@@ -221,7 +221,7 @@
       },
       {
         "url": "https://www.city.yokohama.lg.jp",
-        "model_risk": 0.033,
+        "model_risk": 0.059,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_domain"

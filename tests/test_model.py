@@ -45,3 +45,28 @@ def test_japan_evaluation():
     assert j["jpcert_real_phishing"]["brand_matches_jpcert_label"] >= 0.9
     assert j["jpcert_real_phishing"]["passed_as_official_brand"] == 0
     assert j["popular_jp_sites"]["service"]["false_alarm_rate"] <= 0.06
+
+
+def test_user_feedback_reflected():
+    # 신고 데이터로 재학습했다면: 신고 주소 정답 수가 줄지 않고, 품질 게이트를 통과했어야 함
+    f = M.get("feedback")
+    if not f:
+        return
+    assert f["after_correct"] >= f["before_correct"], f
+    assert M["gate"]["passed"] and not M["gate"]["canary_failed"]
+
+
+def test_poisoned_feedback_is_quarantined():
+    # 인기 사이트 본체를 사기로, (인기 사이트가 아닌) 피싱 이력 도메인을 안전으로 신고한 건 학습에서 빠져야 함
+    import pandas as pd
+    from scripts.train import quarantine
+    rows = [("google.com/search?q=*", 1, "google.com"),            # 인기 사이트 본체 → 검토
+            ("phish-login.weebly.com/", 1, "weebly.com"),          # 인기 호스팅의 하위 주소 → 반영
+            ("gooogle.com/", 1, "gooogle.com"),                    # 오타 도메인 → 반영
+            ("github.com/Minyowa/MLOps-project", 0, "github.com"), # 피싱 이력 있지만 인기 사이트 → 반영
+            ("evil.top/", 0, "evil.top")]                          # 피싱 이력 도메인을 안전으로 → 검토
+    fb = pd.DataFrame(rows, columns=["url", "y", "dom"]).assign(norm=lambda d: d.url)
+    keep, held = quarantine(fb, popular={"google.com", "weebly.com", "github.com"},
+                            phishing={"evil.top", "weebly.com", "github.com"})
+    assert list(keep.url) == ["phish-login.weebly.com/", "gooogle.com/", "github.com/Minyowa/MLOps-project"]
+    assert list(held.url) == ["google.com/search?q=*", "evil.top/"]

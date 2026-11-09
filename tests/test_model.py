@@ -45,3 +45,12 @@ def test_japan_evaluation():
     assert j["jpcert_real_phishing"]["brand_matches_jpcert_label"] >= 0.9
     assert j["jpcert_real_phishing"]["passed_as_official_brand"] == 0
     assert j["popular_jp_sites"]["service"]["false_alarm_rate"] <= 0.06
+
+
+def test_user_feedback_reflected():
+    # 신고 데이터로 재학습했다면: 신고 주소 정답 수가 줄지 않고, 품질 게이트를 통과했어야 함
+    f = M.get("feedback")
+    if not f:
+        return
+    assert f["after_correct"] >= f["before_correct"], f
+    assert M["gate"]["passed"]

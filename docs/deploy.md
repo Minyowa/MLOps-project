@@ -1,3 +1,6 @@
+> 처음 배포한다면 [handover.md](handover.md)를 먼저 보세요. 이 문서는 구조와 설계 이유, 수동 배포 방법을 설명합니다.
+> (11/16부터 AWS 자원 이름은 `linkguard-<GitHub아이디>`, 로그 그룹은 `/linkguard-<GitHub아이디>/app` 입니다.)
+
 # LinkGuard 배포 가이드 (Docker → EC2, GitHub Actions / AWS CLI)
 
 ## 1. 인프라 구성

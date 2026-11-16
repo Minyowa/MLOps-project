@@ -32,6 +32,8 @@ if ! gh auth status -h github.com >/dev/null 2>&1; then
 fi
 
 # 1) EC2
+[ -n "$GH_REPO" ] || { echo "❌ GitHub 저장소를 알 수 없어요. clone한 폴더 안에서 실행하세요"; exit 1; }
+echo "저장소 $GH_REPO · 브랜치 $DEPLOY_BRANCH · 리전 $REGION · 자원 이름 $NAME"
 step "1/5 EC2 준비 ($REGION)"
 bash infra/create_ec2.sh
 # shellcheck source=/dev/null
@@ -55,6 +57,8 @@ gh secret set EC2_SSH_KEY -R "$GH_REPO" < "$KEY_FILE"
 gh variable set AWS_REGION -R "$GH_REPO" -b "$REGION"
 gh variable set S3_BUCKET -R "$GH_REPO" -b "$BUCKET"
 gh variable set LOG_SINKS -R "$GH_REPO" -b "$LOG_SINKS"
+gh variable set CW_LOG_GROUP -R "$GH_REPO" -b "$CW_LOG_GROUP"
+aws logs create-log-group --log-group-name "$CW_LOG_GROUP" 2>/dev/null || true   # 이미 있으면 무시
 
 # 4) 배포 실행
 step "4/5 GitHub Actions 배포 ($DEPLOY_BRANCH)"
@@ -65,7 +69,8 @@ if gh workflow run ci-cd.yml -R "$GH_REPO" --ref "$DEPLOY_BRANCH" -f deploy=true
 else
   # 수동 실행이 안 되면: 이 브랜치의 마지막 push 실행을 다시 돌린다 (새 Secrets 값으로 실행됨)
   RUN_ID=$(gh run list -R "$GH_REPO" -w ci-cd -b "$DEPLOY_BRANCH" -e push -L 1 --json databaseId -q '.[0].databaseId')
-  [ -n "$RUN_ID" ] || { echo "❌ $DEPLOY_BRANCH 브랜치에 push 실행 기록이 없어요. 커밋을 하나 push하세요"; exit 1; }
+  [ -n "$RUN_ID" ] || { echo "❌ Actions 배포를 시작하지 못했어요. fork 저장소에서 ① Actions 탭의 워크플로 사용 버튼을 눌렀는지,"
+                        echo "   ② Settings → General → Default branch가 $DEPLOY_BRANCH 인지 확인하세요 (docs/handover.md 8번)"; exit 1; }
   gh run rerun "$RUN_ID" -R "$GH_REPO"
   # 재실행이 시작돼 상태가 completed에서 바뀔 때까지 기다린 뒤 지켜본다 (안 그러면 이전 결과를 보고 바로 끝남)
   for _ in $(seq 1 20); do
@@ -82,5 +87,6 @@ curl -fsS "http://$IP/health"
 echo
 echo
 echo "✅ 접속 주소: http://$IP/"
+echo "   로그: CloudWatch 로그 그룹 $CW_LOG_GROUP"
 echo "   EC2를 새로 만들었다면 IP가 바뀌었으니 과제 캡처에는 이 주소 화면을 쓰세요."
-echo "   다 쓰면 종료: aws ec2 terminate-instances --instance-ids $INSTANCE_ID"
+echo "   다 쓰면 정리: docs/handover.md 9번 (EC2 종료 + 고정 IP 반납)"

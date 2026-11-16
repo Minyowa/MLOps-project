@@ -10,6 +10,7 @@
 #   vars.S3_BUCKET        로그 버킷 (infra/create_ec2.sh 출력값)
 #   vars.AWS_REGION       예: ap-northeast-1
 #   vars.LOG_SINKS        선택, 기본 local,cloudwatch,s3
+#   vars.CW_LOG_GROUP     CloudWatch 로그 그룹 (infra/up.sh가 /linkguard-<깃허브아이디>/app 로 설정)
 # 비밀값이 없으면 deploy 단계는 건너뛴다 (실패하지 않음).
 name: ci-cd
 
@@ -140,6 +141,7 @@ jobs:
           S3_BUCKET: ${{ vars.S3_BUCKET }}
           AWS_REGION: ${{ vars.AWS_REGION || 'ap-northeast-1' }}
           LOG_SINKS: ${{ vars.LOG_SINKS || 'local,cloudwatch,s3' }}
+          CW_LOG_GROUP: ${{ vars.CW_LOG_GROUP || '/linkguard/app' }}
         run: |
           scp -i ~/.ssh/ec2.pem docker-compose.yml "$SSH_USER@$EC2_HOST:/opt/linkguard/docker-compose.yml"
           # 변수는 러너에서 채워서 보낸다 (의도된 동작)
@@ -148,7 +150,7 @@ jobs:
           set -euo pipefail
           cd /opt/linkguard
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-          export IMAGE="$IMAGE" APP_VERSION="$VERSION" PORT=80 LOG_SINKS="$LOG_SINKS" S3_BUCKET="$S3_BUCKET" AWS_DEFAULT_REGION="$AWS_REGION"
+          export IMAGE="$IMAGE" APP_VERSION="$VERSION" PORT=80 LOG_SINKS="$LOG_SINKS" S3_BUCKET="$S3_BUCKET" AWS_DEFAULT_REGION="$AWS_REGION" CW_LOG_GROUP="$CW_LOG_GROUP"
           mkdir -p logs && sudo chown 10001 logs
           docker compose pull
           docker compose up -d --no-build

@@ -38,6 +38,7 @@ EC2 안: Docker 컨테이너 1개 (웹 화면 + API + 모델) → 로그는 Clou
    - 실제 코드는 `main`이 아니라 `feature/handover` 브랜치에 있습니다. 체크된 채로 만들면 빈 저장소가 됩니다.
 3. 내 fork에서 **Settings → General → Default branch** 를 `feature/handover` 로 바꾸기 (⇄ 버튼 → 선택 → Update)
    - 수동 배포 실행(workflow_dispatch)이 기본 브랜치에 있는 워크플로만 찾기 때문입니다.
+   - **4단계보다 먼저** 하세요. 기본 브랜치가 `main`인 채로 Actions 탭을 열면 "Get started with GitHub Actions" 화면만 나옵니다. 이때 Configure는 누르지 마세요.
 4. 내 fork의 **Actions** 탭 → **"I understand my workflows, go ahead and enable them"** 클릭
    - fork는 보안상 Actions가 꺼진 채로 만들어집니다. 이걸 안 누르면 배포가 시작되지 않습니다.
 
@@ -68,7 +69,7 @@ cd MLOps-project && bash infra/up.sh
 |---|---|
 | `Authenticate Git with your GitHub credentials? (Y/n)` | **Y** |
 | `! First copy your one-time code: XXXX-XXXX` | 코드를 복사해 https://github.com/login/device 에 입력 → **Authorize github** |
-| `AccessDenied ... iam:...` 같은 빨간 줄 | 무시해도 됩니다 (학생 계정은 IAM 역할을 못 만듦 → 학교가 만들어 둔 역할을 씀) |
+| `AccessDenied ... iam:...` 같은 빨간 줄 (안 나올 수도 있음) | 무시해도 됩니다 (학생 계정은 IAM 역할을 못 만듦 → 학교가 만들어 둔 역할을 씀) |
 | `curl: (7) Failed to connect` (배포 확인 단계 첫 줄) | 정상입니다. 컨테이너가 뜨는 중이라 다시 시도해서 성공합니다 |
 
 마지막에 이렇게 나오면 성공입니다.
@@ -114,6 +115,8 @@ cd MLOps-project && bash infra/up.sh
 | 6 | AWS 콘솔 → CloudWatch → 로그 그룹 `/linkguard-<내아이디>/app` | `"event": "check"`, `"event": "feedback"` 로그 |
 | 7 | 화면 맨 아래 | `app <커밋7자리> · model char3-5_lr+fb270@… · brands jp,kr` |
 
+검증 기록: 2026-11-16 팀원(cucumbersoap)이 이 문서만 보고 fork부터 배포까지 진행, 체크리스트 7/7 통과 (약 10분)
+
 브라우저 주소창의 "주의 요함" 표시는 HTTPS가 아니라서 나오는 것입니다(과제용 HTTP 배포).
 
 ## 6. 코드를 고친 뒤 다시 배포하기
@@ -148,6 +151,9 @@ git add data/feedback && git commit -m "data: 신고 데이터" && git push -u o
 | 증상 | 원인 | 해결 |
 |---|---|---|
 | `❌ Actions 배포를 시작하지 못했어요` / `could not find any workflows named ci-cd.yml` | fork에서 Actions가 꺼져 있거나, 기본 브랜치에 워크플로가 없음 | 2번의 3·4단계 (기본 브랜치 `feature/handover`, Actions 사용 버튼) 후 `bash infra/up.sh` 다시 실행 |
+| Actions 탭에 "Get started with GitHub Actions" 화면만 나옴 | 기본 브랜치가 아직 `main` | 2번의 3단계(기본 브랜치 변경)를 먼저 한 뒤 Actions 탭 다시 열기 |
+| 기본 브랜치 변경 시 `Could not change default branch` | GitHub 일시 오류 | 새로고침(F5) 후 다시 시도. 계속 실패하면 CloudShell에서 `gh repo edit <내아이디>/MLOps-project --default-branch feature/handover` |
+| 원본 문서·스크립트가 바뀌었는데 내 fork는 그대로 | fork는 자동으로 동기화되지 않음 | 내 fork에서 `feature/handover` 선택 → **Sync fork → Update branch**, CloudShell에서 `git pull` |
 | fork에 `feature/handover` 브랜치가 없음 | fork할 때 "main branch only"가 체크돼 있었음 | fork를 지우고 체크 해제 후 다시 fork (Settings 맨 아래 Delete this repository) |
 | `git push` 할 때 `Username for 'https://github.com'` / `/usr/bin/gh: No such file` | CloudShell이 쉬었다 켜지면 홈 폴더 밖에 설치한 gh가 지워짐 | Ctrl+C 후 `bash infra/up.sh` 다시 실행(자동 설치) 또는 아래 3줄을 한 줄씩:<br>`sudo dnf install -y 'dnf-command(config-manager)'`<br>`sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo`<br>`sudo dnf install -y gh --repo gh-cli` |
 | `❌ 실행 중인 EC2(i-…)의 키 파일 … 이 없습니다` | CloudShell 홈이 초기화돼 키 파일이 사라짐 | 안내된 `aws ec2 terminate-instances …` 실행 후 `bash infra/up.sh` 다시 실행 |

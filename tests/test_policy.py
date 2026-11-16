@@ -55,3 +55,19 @@ def test_decide_order_and_messages():
 
 def test_i18n_tables_have_same_keys():
     assert set(MESSAGES["ja"]) == set(MESSAGES["ko"])
+
+
+def test_open_redirect_on_official_domain_is_not_safe():
+    # JPCERT 실제 사례: 네이버 공식 도메인의 전달 링크로 피싱 사이트에 보냄 (주소를 퍼센트 인코딩으로 숨김)
+    from linkguard.policy import decide
+    from linkguard.features import normalize
+    u = normalize("https://cc.naver.com/cc?a=pst.link&u=https://%6C%65%6E%64%69%6E%61%62%6F%78.%63%6F%6D/x")
+    d = decide(u, 0.0, {"naver.com"})
+    assert d.stage == "open_redirect" and d.risk >= 0.5 and d.reasons[0]["target"] == "lendinabox.com"
+    # 같은 사이트 안으로 넘기는 링크는 해당 없음
+    assert decide(normalize("https://www.google.com/url?q=https://maps.google.com/x"), 0.0, {"google.com"}).stage == "reputable_domain"
+
+
+def test_japan_and_korea_rules_both_on_by_default():
+    from linkguard.brands import BRANDS, REGION
+    assert REGION == "jp,kr" and "ヤマト運輸" in BRANDS and "CJ대한통운" in BRANDS

@@ -49,7 +49,7 @@ SEED = 0
 CUTOFF_YEAR = 2023      # 이 해까지의 피싱은 학습, 이후는 평가
 TEST_PER_CLASS = 20_000
 MAX_FEATURES = 200_000
-REPUTATION_TOP_K = 10_000
+REPUTATION_TOP_K = 10_000   # 인기 상위 N개 도메인을 '평판 좋은 사이트'로 (피싱 이력 있으면 제외)
 FEEDBACK_WEIGHT = 100         # 신고 1건의 가중치. 78만 건 사이에서 신고 수십 건이 묻히지 않게 (가중치 실험: README)
 GATE_TOLERANCE = 0.01
 CANARY_SAFE = [
@@ -57,11 +57,15 @@ CANARY_SAFE = [
     "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "https://www.naver.com", "https://search.naver.com/search.naver?query=x",
     "https://www.yahoo.co.jp", "https://www.amazon.co.jp/dp/B0C1234567", "https://github.com/torvalds/linux",
     "https://ja.wikipedia.org/wiki/東京", "https://www.instagram.com/", "https://x.com/home",
+    # 한국 (공식 주소 규칙에 없는 곳 — 모델 자체가 지켜야 함)
+    "https://www.11st.co.kr", "https://www.gmarket.co.kr", "https://www.coupang.com/np/search?q=x",
+    "https://www.daum.net", "https://www.baemin.com",
 ]
 CANARY_SCAM = [
     "https://kuronekoyamato-delivery.top/jp", "https://smbc-card-login.top/vpass", "http://bsqzqdqykm.duckdns.org/?vjhgb",
     "https://amazon-co-jp-login.top/signin", "https://naver-login-secure.xyz/nid",
-]   # 인기 상위 N개 도메인을 '평판 좋은 사이트'로 (피싱 이력 있으면 제외)
+    "https://cjlogistics-delivery.top/track", "https://kbstar-login.info",
+]
 
 
 def domain(norm_url: str) -> str:

@@ -37,6 +37,7 @@ DESC_TO_BRAND = {
     "UC Card": "UCカード", "MICARD": "MICARD", "American Express": "American Express", "Microsoft": "Microsoft",
     "みずほ銀行": "みずほ銀行", "ヨドバシカメラ": "ヨドバシカメラ", "Orico": "オリコ", "PayPay": "PayPay",
     "全国信用金庫協会": "信用金庫", "日本郵便": "日本郵便", "佐川急便": "佐川急便",
+    "VISA JAPAN ASSOCIATION": "VISA", "大和証券": "大和証券", "ANA": "ANA", "TS CUBIC CARD_MY TS3": "TS CUBIC CARD",
 }
 
 JAPANESE_SERVICES = [

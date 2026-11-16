@@ -70,3 +70,11 @@ def test_poisoned_feedback_is_quarantined():
                             phishing={"evil.top", "weebly.com", "github.com"})
     assert list(keep.url) == ["phish-login.weebly.com/", "gooogle.com/", "github.com/Minyowa/MLOps-project"]
     assert list(held.url) == ["google.com/search?q=*", "evil.top/"]
+
+
+def test_korea_evaluation():
+    # 한국 사용자 관점: 한국 주요 서비스 40곳은 모두 안전, 한국 기관 사칭 예시는 위험 + 공식 주소 안내
+    k = json.loads((ROOT / "models" / "metrics_korea.json").read_text())
+    assert k["korean_services"]["service_not_safe"] == []
+    ex = k["korean_impersonation_examples"]
+    assert ex["service_danger"] == ex["n"] and ex["official_address_shown"] == ex["n"]

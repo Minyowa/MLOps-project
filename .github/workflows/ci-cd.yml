@@ -73,7 +73,7 @@ jobs:
           docker run -d --name lg -p 8000:8000 "$IMAGE"
           for _ in $(seq 1 30); do curl -fsS localhost:8000/health && break; sleep 2; done
           echo
-          curl -fsS localhost:8000/health | jq -e --arg v "$VERSION" '.status == "ok" and .app_version == $v and .brand_region == "jp"'
+          curl -fsS localhost:8000/health | jq -e --arg v "$VERSION" '.status == "ok" and .app_version == $v and .brand_region == "jp,kr"'
           echo "--- 사칭 링크"
           curl -fsS -X POST localhost:8000/v1/check -H 'content-type: application/json' \
             -d '{"url":"https://kuronekoyamato-delivery.top/jp"}' | tee /tmp/fake.json | jq .
@@ -82,6 +82,13 @@ jobs:
           curl -fsS -X POST localhost:8000/v1/check -H 'content-type: application/json' \
             -d '{"url":"https://toi.kuronekoyamato.co.jp/cgi-bin/tneko"}' | tee /tmp/real.json | jq .
           jq -e '.verdict == "안전" and .stage == "official_brand"' /tmp/real.json
+          echo "--- 한국 사칭 링크"
+          curl -fsS -X POST localhost:8000/v1/check -H 'content-type: application/json' \
+            -d '{"url":"https://cjlogistics-delivery.top/track","lang":"ko"}' | tee /tmp/kr.json | jq .
+          jq -e '.verdict == "위험" and .stage == "brand_impersonation" and .brand == "CJ대한통운"' /tmp/kr.json
+          echo "--- 한국 공식 사이트"
+          curl -fsS -X POST localhost:8000/v1/check -H 'content-type: application/json' \
+            -d '{"url":"https://card.kbcard.com","lang":"ko"}' | jq -e '.verdict == "안전" and .stage == "official_brand"'
           echo "--- 신고"
           ID=$(jq -r .check_id /tmp/fake.json)
           curl -fsS -X POST localhost:8000/v1/feedback -H 'content-type: application/json' \

@@ -1,4 +1,4 @@
-"""자주 사칭되는 기관의 공식 도메인 목록 (사람이 관리하는 목록). 지역은 BRAND_REGION(jp/kr)으로 선택.
+"""자주 사칭되는 기관의 공식 도메인 목록 (사람이 관리하는 목록). 지역은 BRAND_REGION으로 선택 (기본 jp,kr = 둘 다).
 
 용도
   1) 공식 도메인 → '안전' (예: 진짜 택배 조회 페이지가 모델에서 위험으로 오판되던 문제 해결)
@@ -68,6 +68,11 @@ JP: dict[str, dict] = {
     # 공공 (.go.jp는 정부 도메인 규칙으로도 처리됨)
     "国税庁": {"keywords": ["nta", "e-tax"], "domains": ["nta.go.jp"]},
     "総務省": {"keywords": ["soumu"], "domains": ["soumu.go.jp"]},
+    # JPCERT 사칭 상위 30위 중 누락분 (2026-11 추가)
+    "VISA": {"keywords": ["visa"], "domains": ["visa.co.jp", "visa.com"]},
+    "大和証券": {"keywords": ["daiwa"], "domains": ["daiwa.jp"]},
+    "ANA": {"keywords": ["ana"], "domains": ["ana.co.jp"]},
+    "TS CUBIC CARD": {"keywords": ["tscubic"], "domains": ["tscubic.com"]},
 }
 
 KR: dict[str, dict] = {
@@ -105,8 +110,9 @@ KR: dict[str, dict] = {
 USER_CONTENT_HOSTS = {"live.com", "office.com", "outlook.com", "biglobe.ne.jp"}
 
 REGIONS = {"jp": JP, "kr": KR}
-REGION = os.getenv("BRAND_REGION", "jp").lower()
-BRANDS: dict[str, dict] = REGIONS[REGION]
+# "jp,kr"처럼 여러 지역을 함께 켤 수 있다. 서비스 대상이 한국·일본 이용자라 기본은 둘 다.
+REGION = ",".join(r for r in os.getenv("BRAND_REGION", "jp,kr").lower().replace(" ", "").split(",") if r in REGIONS) or "jp,kr"
+BRANDS: dict[str, dict] = {name: b for r in REGION.split(",") for name, b in REGIONS[r].items()}
 OFFICIAL_TO_BRAND = {d: name for name, b in BRANDS.items() for d in b["domains"]}
 
 

@@ -34,7 +34,7 @@ def events(path):
 
 def test_health_and_ui():
     h = client.get("/health").json()
-    assert h["status"] == "ok" and h["brand_region"] == "jp" and "app_version" in h
+    assert h["status"] == "ok" and h["brand_region"] == "jp,kr" and "app_version" in h
     assert "LinkGuard" in client.get("/").text
 
 

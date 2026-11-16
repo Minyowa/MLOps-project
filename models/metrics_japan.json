@@ -1,10 +1,10 @@
 {
   "jpcert_real_phishing": {
     "n_phishing_2024_plus": 114556,
-    "flagged_as_impersonation": 0.0817,
-    "brand_matches_jpcert_label": 0.9743,
+    "flagged_as_impersonation": 0.0868,
+    "brand_matches_jpcert_label": 0.9717,
     "recall_model_only": 0.892,
-    "recall_service": 0.8943,
+    "recall_service": 0.8944,
     "passed_as_official_brand": 0
   },
   "popular_jp_sites": {

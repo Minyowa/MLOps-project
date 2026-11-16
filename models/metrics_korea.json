@@ -1,0 +1,471 @@
+{
+  "brand_region": "jp,kr",
+  "korean_services": {
+    "n": 40,
+    "model_only_not_safe": [
+      "https://m.naver.com",
+      "https://mail.naver.com",
+      "https://service.epost.go.kr/iservice/usr/trace/usrtrc001k01.jsp",
+      "https://www.lotteglogis.com/home/reservation/tracking/index",
+      "https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillSch.do",
+      "https://www.ilogen.com/web/personal/trace",
+      "https://card.kbcard.com",
+      "https://www.shinhancard.com",
+      "https://banking.nonghyup.com",
+      "https://www.ibk.co.kr",
+      "https://www.bccard.com",
+      "https://toss.im",
+      "https://www.ssg.com"
+    ],
+    "service_not_safe": [],
+    "rows": [
+      {
+        "url": "https://www.naver.com",
+        "model_risk": 0.022,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "네이버"
+      },
+      {
+        "url": "https://m.naver.com",
+        "model_risk": 0.415,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "네이버"
+      },
+      {
+        "url": "https://mail.naver.com",
+        "model_risk": 0.784,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "네이버"
+      },
+      {
+        "url": "https://www.daum.net",
+        "model_risk": 0.008,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "reputable_domain",
+        "brand": null
+      },
+      {
+        "url": "https://www.kakaocorp.com",
+        "model_risk": 0.022,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "카카오"
+      },
+      {
+        "url": "https://www.kakaobank.com",
+        "model_risk": 0.064,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "카카오"
+      },
+      {
+        "url": "https://www.cjlogistics.com/ko/tool/parcel/tracking",
+        "model_risk": 0.044,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "CJ대한통운"
+      },
+      {
+        "url": "https://service.epost.go.kr/iservice/usr/trace/usrtrc001k01.jsp",
+        "model_risk": 0.901,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_domain",
+        "brand": null
+      },
+      {
+        "url": "https://www.lotteglogis.com/home/reservation/tracking/index",
+        "model_risk": 0.315,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "롯데택배"
+      },
+      {
+        "url": "https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillSch.do",
+        "model_risk": 0.848,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "한진택배"
+      },
+      {
+        "url": "https://www.ilogen.com/web/personal/trace",
+        "model_risk": 0.576,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "로젠택배"
+      },
+      {
+        "url": "https://www.kbstar.com",
+        "model_risk": 0.082,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "KB국민"
+      },
+      {
+        "url": "https://card.kbcard.com",
+        "model_risk": 0.865,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "KB국민"
+      },
+      {
+        "url": "https://www.shinhan.com",
+        "model_risk": 0.229,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "신한"
+      },
+      {
+        "url": "https://www.shinhancard.com",
+        "model_risk": 0.63,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "신한"
+      },
+      {
+        "url": "https://www.wooribank.com",
+        "model_risk": 0.111,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "우리"
+      },
+      {
+        "url": "https://www.hanabank.com",
+        "model_risk": 0.105,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "하나"
+      },
+      {
+        "url": "https://banking.nonghyup.com",
+        "model_risk": 0.501,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "NH농협"
+      },
+      {
+        "url": "https://www.ibk.co.kr",
+        "model_risk": 0.529,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "IBK기업은행"
+      },
+      {
+        "url": "https://www.samsungcard.com",
+        "model_risk": 0.286,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "삼성카드"
+      },
+      {
+        "url": "https://www.hyundaicard.com",
+        "model_risk": 0.196,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "현대카드"
+      },
+      {
+        "url": "https://www.lottecard.co.kr",
+        "model_risk": 0.185,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "롯데카드"
+      },
+      {
+        "url": "https://www.bccard.com",
+        "model_risk": 0.548,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "BC카드"
+      },
+      {
+        "url": "https://toss.im",
+        "model_risk": 0.33,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "토스"
+      },
+      {
+        "url": "https://www.coupang.com/np/search?q=x",
+        "model_risk": 0.049,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "쿠팡"
+      },
+      {
+        "url": "https://www.tworld.co.kr",
+        "model_risk": 0.025,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "SK텔레콤"
+      },
+      {
+        "url": "https://www.lguplus.com",
+        "model_risk": 0.096,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "LG유플러스"
+      },
+      {
+        "url": "https://www.nhis.or.kr",
+        "model_risk": 0.048,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_brand",
+        "brand": "국민건강보험"
+      },
+      {
+        "url": "https://www.hometax.go.kr",
+        "model_risk": 0.019,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_domain",
+        "brand": null
+      },
+      {
+        "url": "https://www.gov.kr",
+        "model_risk": 0.005,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "official_domain",
+        "brand": null
+      },
+      {
+        "url": "https://www.11st.co.kr",
+        "model_risk": 0.072,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "reputable_domain",
+        "brand": null
+      },
+      {
+        "url": "https://www.gmarket.co.kr",
+        "model_risk": 0.109,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "reputable_domain",
+        "brand": null
+      },
+      {
+        "url": "https://www.ssg.com",
+        "model_risk": 0.635,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "reputable_domain",
+        "brand": null
+      },
+      {
+        "url": "https://www.musinsa.com",
+        "model_risk": 0.082,
+        "service_risk": 0.082,
+        "verdict": "안전",
+        "stage": "model",
+        "brand": null
+      },
+      {
+        "url": "https://www.baemin.com",
+        "model_risk": 0.029,
+        "service_risk": 0.029,
+        "verdict": "안전",
+        "stage": "model",
+        "brand": null
+      },
+      {
+        "url": "https://www.nexon.com",
+        "model_risk": 0.002,
+        "service_risk": 0.002,
+        "verdict": "안전",
+        "stage": "model",
+        "brand": null
+      },
+      {
+        "url": "https://lostark.game.onstove.com",
+        "model_risk": 0.019,
+        "service_risk": 0.019,
+        "verdict": "안전",
+        "stage": "model",
+        "brand": null
+      },
+      {
+        "url": "https://www.yes24.com",
+        "model_risk": 0.107,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "reputable_domain",
+        "brand": null
+      },
+      {
+        "url": "https://www.danawa.com",
+        "model_risk": 0.191,
+        "service_risk": 0.0,
+        "verdict": "안전",
+        "stage": "reputable_domain",
+        "brand": null
+      },
+      {
+        "url": "https://www.kt.com",
+        "model_risk": 0.16,
+        "service_risk": 0.16,
+        "verdict": "안전",
+        "stage": "model",
+        "brand": null
+      }
+    ]
+  },
+  "korean_impersonation_examples": {
+    "n": 15,
+    "service_danger": 15,
+    "official_address_shown": 15,
+    "rows": [
+      {
+        "url": "https://cjlogistics-delivery.top/track",
+        "model_risk": 0.874,
+        "service_risk": 0.9,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "CJ대한통운"
+      },
+      {
+        "url": "https://epost-redelivery.xyz/kr",
+        "model_risk": 0.992,
+        "service_risk": 0.992,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "우체국"
+      },
+      {
+        "url": "https://kbstar-login.info",
+        "model_risk": 0.923,
+        "service_risk": 0.923,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "KB국민"
+      },
+      {
+        "url": "https://shinhan-card-verify.com",
+        "model_risk": 0.987,
+        "service_risk": 0.987,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "신한"
+      },
+      {
+        "url": "https://nhis-checkup-result.info",
+        "model_risk": 0.97,
+        "service_risk": 0.97,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "국민건강보험"
+      },
+      {
+        "url": "https://hometax-refund.top",
+        "model_risk": 1.0,
+        "service_risk": 1.0,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "홈택스"
+      },
+      {
+        "url": "https://toss-auth-secure.net",
+        "model_risk": 0.998,
+        "service_risk": 0.998,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "토스"
+      },
+      {
+        "url": "https://coupang-order-cancel.xyz",
+        "model_risk": 0.979,
+        "service_risk": 0.979,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "쿠팡"
+      },
+      {
+        "url": "https://kakao-account-lock.top",
+        "model_risk": 1.0,
+        "service_risk": 1.0,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "카카오"
+      },
+      {
+        "url": "https://naver-login-secure.xyz/nid",
+        "model_risk": 1.0,
+        "service_risk": 1.0,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "네이버"
+      },
+      {
+        "url": "https://lguplus-billing.info",
+        "model_risk": 0.902,
+        "service_risk": 0.902,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "LG유플러스"
+      },
+      {
+        "url": "https://hanjin-parcel-check.info",
+        "model_risk": 0.976,
+        "service_risk": 0.976,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "한진택배"
+      },
+      {
+        "url": "https://gov24-notice.top",
+        "model_risk": 0.999,
+        "service_risk": 0.999,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "정부24"
+      },
+      {
+        "url": "https://wooribank-otp.site",
+        "model_risk": 0.961,
+        "service_risk": 0.961,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "우리"
+      },
+      {
+        "url": "https://samsungcard-event.icu",
+        "model_risk": 0.994,
+        "service_risk": 0.994,
+        "verdict": "위험",
+        "stage": "brand_impersonation",
+        "brand": "삼성카드"
+      }
+    ]
+  }
+}

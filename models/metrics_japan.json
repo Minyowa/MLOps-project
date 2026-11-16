@@ -3,26 +3,26 @@
     "n_phishing_2024_plus": 114556,
     "flagged_as_impersonation": 0.0873,
     "brand_matches_jpcert_label": 0.9717,
-    "recall_model_only": 0.892,
-    "recall_service": 0.8944,
+    "recall_model_only": 0.894,
+    "recall_service": 0.8965,
     "passed_as_official_brand": 0
   },
   "popular_jp_sites": {
     "n": 558,
     "model_only": {
-      "false_alarm_rate": 0.0502,
+      "false_alarm_rate": 0.0645,
       "verdicts": {
-        "안전": 0.8978,
-        "주의": 0.0824,
-        "위험": 0.0197
+        "안전": 0.862,
+        "주의": 0.1165,
+        "위험": 0.0215
       }
     },
     "service": {
-      "false_alarm_rate": 0.043,
+      "false_alarm_rate": 0.0573,
       "verdicts": {
-        "안전": 0.9122,
-        "주의": 0.0699,
-        "위험": 0.0179
+        "안전": 0.8853,
+        "주의": 0.095,
+        "위험": 0.0197
       }
     }
   },
@@ -45,6 +45,7 @@
       "https://www.post.japanpost.jp",
       "https://www.docomo.ne.jp",
       "https://www.softbank.jp",
+      "https://www.tepco.co.jp",
       "https://www.eki-net.com",
       "https://www.etc-meisai.jp",
       "https://www.apple.com/jp/"
@@ -53,91 +54,91 @@
     "rows": [
       {
         "url": "https://www.amazon.co.jp/gp/your-account",
-        "model_risk": 0.741,
+        "model_risk": 0.806,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.rakuten.co.jp",
-        "model_risk": 0.82,
+        "model_risk": 0.911,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://jp.mercari.com",
-        "model_risk": 0.987,
+        "model_risk": 0.99,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.yahoo.co.jp",
-        "model_risk": 0.003,
+        "model_risk": 0.005,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "reputable_domain"
       },
       {
         "url": "https://line.me/ja/",
-        "model_risk": 0.186,
+        "model_risk": 0.128,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "reputable_domain"
       },
       {
         "url": "https://www.smbc-card.com/mem/index.jsp",
-        "model_risk": 0.997,
+        "model_risk": 0.998,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.jcb.co.jp",
-        "model_risk": 0.773,
+        "model_risk": 0.882,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.saisoncard.co.jp",
-        "model_risk": 0.816,
+        "model_risk": 0.906,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.aeon.co.jp",
-        "model_risk": 0.905,
+        "model_risk": 0.955,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.eposcard.co.jp",
-        "model_risk": 0.887,
+        "model_risk": 0.947,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://paypay.ne.jp",
-        "model_risk": 0.777,
+        "model_risk": 0.832,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.bk.mufg.jp",
-        "model_risk": 0.994,
+        "model_risk": 0.995,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.mizuhobank.co.jp",
-        "model_risk": 0.587,
+        "model_risk": 0.669,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
@@ -151,70 +152,70 @@
       },
       {
         "url": "https://toi.kuronekoyamato.co.jp/cgi-bin/tneko",
-        "model_risk": 0.996,
+        "model_risk": 0.997,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.sagawa-exp.co.jp",
-        "model_risk": 0.477,
+        "model_risk": 0.56,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.post.japanpost.jp",
-        "model_risk": 0.728,
+        "model_risk": 0.746,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.docomo.ne.jp",
-        "model_risk": 0.847,
+        "model_risk": 0.887,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.au.com",
-        "model_risk": 0.158,
+        "model_risk": 0.229,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.softbank.jp",
-        "model_risk": 0.907,
+        "model_risk": 0.915,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.tepco.co.jp",
-        "model_risk": 0.214,
+        "model_risk": 0.314,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.eki-net.com",
-        "model_risk": 0.998,
+        "model_risk": 0.999,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.etc-meisai.jp",
-        "model_risk": 0.99,
+        "model_risk": 0.991,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_brand"
       },
       {
         "url": "https://www.nta.go.jp",
-        "model_risk": 0.001,
+        "model_risk": 0.0,
         "service_risk": 0.0,
         "verdict": "안전",
         "stage": "official_domain"

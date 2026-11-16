@@ -71,3 +71,31 @@ def test_open_redirect_on_official_domain_is_not_safe():
 def test_japan_and_korea_rules_both_on_by_default():
     from linkguard.brands import BRANDS, REGION
     assert REGION == "jp,kr" and "ヤマト運輸" in BRANDS and "CJ대한통운" in BRANDS
+
+
+def test_redirect_to_trusted_site_is_not_flagged():
+    # PR #10 리뷰: 넘어가는 곳이 공공·공식·평판 도메인이면 전달 링크 규칙을 건너뛴다
+    from linkguard.policy import decide
+    from linkguard.features import normalize
+    rep = {"yahoo.co.jp", "nhk.or.jp", "facebook.com"}
+    for u in ["https://www.google.com/url?q=https://www.yahoo.co.jp/",
+              "https://www.facebook.com/sharer/sharer.php?u=https://www.nhk.or.jp/news",
+              "https://www.nta.go.jp/?next=https://www.yahoo.co.jp"]:
+        assert decide(normalize(u), 0.0, rep).stage != "open_redirect", u
+    # 처음 보는 곳으로 넘기면 공공 도메인이라도 주의 (공공기관 전달 링크도 악용됨)
+    assert decide(normalize("https://www.nta.go.jp/?next=https://example.com"), 0.0, rep).stage == "open_redirect"
+
+
+def test_redirect_target_ignores_userinfo():
+    from linkguard.policy import redirect_target
+    from linkguard.features import normalize
+    assert redirect_target(normalize("https://x.top/?u=https://www.naver.com@evil.top")) == "evil.top"
+
+
+def test_short_common_words_are_not_impersonation():
+    # PR #10 리뷰: visa·ana 같은 일반 단어와 겹치는 키워드로 정상 사이트가 사칭(0.9)이 되면 안 됨
+    from linkguard.brands import impersonated_brand
+    from linkguard.features import registered_domain
+    for h in ["visa.vfsglobal.com", "jp-visa.info", "ana.hamburg.de", "ana-kitchen.jp", "banana-shop.jp"]:
+        assert impersonated_brand(h, registered_domain(h)) is None, h
+    assert impersonated_brand("ana-mileage.xyz", "ana-mileage.xyz") == "ANA"

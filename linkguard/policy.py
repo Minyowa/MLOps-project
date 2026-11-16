@@ -1,8 +1,10 @@
 """최종 판정 규칙 — API(app/main.py)와 평가 스크립트가 같은 함수를 쓴다.
 
 순서
-  0. 쿼리에 다른 사이트 주소를 품은 전달(리다이렉트) 링크   → 주의 이상 (모델 점수와 0.5 중 큰 값)
+  0. 쿼리에 다른 사이트 주소를 품은 전달(리다이렉트) 링크이고, 넘어가는 곳이 믿을 수 있는 곳(1~3번)이 아니면
+                                                          → 주의 이상 (모델 점수와 0.5 중 큰 값)
      예: cc.naver.com/cc?…&u=https://(피싱) — 공식 도메인이라도 안전 처리하지 않는다 (JPCERT 실제 사례)
+     넘어가는 곳이 공공·공식·평판 도메인이면(google.com/url?q=https://www.yahoo.co.jp) 이 규칙은 건너뛴다
   1. 정부·공공 도메인 (.go.jp, .lg.jp, .go.kr …)          → 안전
   2. 주요 기관 공식 도메인 (brands.py, BRAND_REGION 기본 jp,kr)        → 안전
      (단, live.com처럼 사용자 콘텐츠를 올릴 수 있는 곳은 제외 → 모델)
@@ -34,7 +36,8 @@ def redirect_target(norm_url: str) -> str | None:
     m = _EMBEDDED_URL.search(unquote(unquote(query)))
     if not m:
         return None
-    target = m.group(1).lower().split(":")[0].removeprefix("www.")
+    # https://www.naver.com@evil.top 처럼 '@' 앞은 꾸밈(사용자 정보)이고 실제 목적지는 뒤쪽
+    target = m.group(1).lower().split("@")[-1].split(":")[0].removeprefix("www.")
     own = registered_domain(host_of(norm_url).split(":")[0])
     return target if registered_domain(target) != own else None
 
@@ -47,12 +50,19 @@ class Decision:
     brand: str | None = None
 
 
+def trusted_host(host: str, reputable: set[str]) -> bool:
+    """공공 도메인, 주요 기관 공식 도메인, 평판 도메인(사용자 콘텐츠 호스팅 제외)."""
+    dom = registered_domain(host)
+    return (is_official(f"{host}/") or official_brand(dom) is not None
+            or (dom in reputable and dom not in USER_CONTENT_HOSTS))
+
+
 def decide(norm_url: str, model_risk: float, reputable: set[str]) -> Decision:
     hostname = host_of(norm_url).split(":")[0]
     dom = registered_domain(hostname)
 
     target = redirect_target(norm_url)
-    if target:
+    if target and not trusted_host(target, reputable):
         return Decision(max(model_risk, REDIRECT_FLOOR), "open_redirect",
                         [{"code": "open_redirect", "target": target}] + reasons(extract(norm_url)))
     if is_official(norm_url):

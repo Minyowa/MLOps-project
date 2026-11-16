@@ -69,9 +69,12 @@ JP: dict[str, dict] = {
     "国税庁": {"keywords": ["nta", "e-tax"], "domains": ["nta.go.jp"]},
     "総務省": {"keywords": ["soumu"], "domains": ["soumu.go.jp"]},
     # JPCERT 사칭 상위 30위 중 누락분 (2026-11 추가)
-    "VISA": {"keywords": ["visa"], "domains": ["visa.co.jp", "visa.com"]},
+    # "visa"는 비자 신청 등 일반 단어와 겹치고(visa.vfsglobal.com), JPCERT VISA 사칭 주소에는 이 단어가 거의 없어
+    # 사칭 키워드 없이 공식 도메인만 등록 (PR #10 리뷰)
+    "VISA": {"keywords": [], "domains": ["visa.co.jp", "visa.com"]},
     "大和証券": {"keywords": ["daiwa"], "domains": ["daiwa.jp"]},
-    "ANA": {"keywords": ["ana"], "domains": ["ana.co.jp"]},
+    # "ana" 한 단어는 ana-kitchen.jp, ana.hamburg.de 같은 정상 사이트와 겹쳐서 ANA 고유 표기만 (PR #10 리뷰)
+    "ANA": {"keywords": ["anagroup", "analines", "anamileage", "ana-mileage"], "domains": ["ana.co.jp"]},
     "TS CUBIC CARD": {"keywords": ["tscubic"], "domains": ["tscubic.com"]},
 }
 

@@ -85,7 +85,8 @@
 
 ```bash
 docker compose up --build                       # 로컬: http://localhost:8080
-bash infra/create_ec2.sh                        # AWS CLI: EC2 + 보안 그룹 + S3 버킷 (처음 한 번)
+bash infra/up.sh                                # CloudShell: EC2 생성 + GitHub Secrets 갱신 + Actions 배포 (매주 초기화 후 이것만)
+bash infra/create_ec2.sh                        # AWS CLI: EC2 + 보안 그룹 + S3 버킷만
 S3_BUCKET=<버킷> bash infra/deploy.sh <브랜치>   # AWS CLI + SSH 배포 → /health로 버전 확인
 ```
 - **GitHub Actions** (`.github/workflows/ci-cd.yml`): PR마다 테스트 → 이미지 빌드 → 컨테이너 스모크 테스트. main push 또는 수동 실행 시 GHCR 푸시 → EC2 배포 → 배포 버전 확인

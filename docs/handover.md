@@ -125,6 +125,7 @@ cd MLOps-project && bash infra/up.sh
 
 ```bash
 # A. CloudShell에서 수동 실행 (어느 브랜치든)
+gh repo set-default <내아이디>/MLOps-project   # fork에서는 처음 한 번 (원본 Minyowa 말고 내 fork 선택)
 gh workflow run ci-cd.yml --ref <브랜치> -f deploy=true
 ```
 - B. `feature/deploy-` 로 시작하는 브랜치나 `main`에 push하면 자동으로 배포됩니다.
@@ -161,6 +162,9 @@ git add data/feedback && git commit -m "data: 신고 데이터" && git push -u o
 | 배포 단계에서 `docker login` / `pull` 권한 오류 | fork의 Actions 토큰 권한이 읽기 전용으로 제한됨 | fork의 Settings → Actions → General → Workflow permissions → **Read and write permissions** → Save |
 | `⚠️ 고정 IP를 쓸 수 없어…` | 계정 권한상 Elastic IP 불가 | 그대로 진행됩니다. 대신 EC2를 새로 만들 때마다 주소가 바뀝니다 |
 | 다음 주에 사이트가 안 열림 | 학교 계정이 매주 EC2를 정리함 | CloudShell에서 `cd ~/MLOps-project && git pull && bash infra/up.sh` (폴더가 없으면 4번부터) |
+| `No default remote repository has been set` (gh workflow run 실행 시) | fork는 원본과 내 저장소가 둘 다 연결돼 있어 gh가 대상을 모름 | `gh repo set-default <내아이디>/MLOps-project` 후 다시 실행 (원본 Minyowa를 고르면 안 됨) |
+| `Please tell me who you are` / `empty ident name` (git commit 시) | CloudShell에 git 사용자 정보가 없음 | `git config --global user.email "<이메일>"`, `git config --global user.name "<아이디>"` 후 커밋 다시 실행 |
+| `src refspec feature/retrain-<이름> does not match any` (git push 시) | `git checkout -b`에 브랜치 이름을 잘못 입력함 (예: 이름이 두 번 들어감) | `git branch`로 현재 이름 확인 → `git branch -m feature/retrain-<이름>`으로 바꾼 뒤 push |
 
 ## 9. 다 쓰고 정리하기 (비용)
 

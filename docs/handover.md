@@ -115,7 +115,9 @@ cd MLOps-project && bash infra/up.sh
 | 6 | AWS 콘솔 → CloudWatch → 로그 그룹 `/linkguard-<내아이디>/app` | `"event": "check"`, `"event": "feedback"` 로그 |
 | 7 | 화면 맨 아래 | `app <커밋7자리> · model char3-5_lr+fb270@… · brands jp,kr` |
 
-검증 기록: 2026-11-16 팀원(cucumbersoap)이 이 문서만 보고 fork부터 배포까지 진행, 체크리스트 7/7 통과 (약 10분)
+검증 기록 (2026-11-16, 서울 리전, app `9029866`)
+- cucumbersoap: 이 문서만 보고 fork부터 배포까지 진행, 체크리스트 7/7 통과 (약 10분) — PR #7
+- jyh0729: 배포 + 7번 재학습까지 진행, retrain 성공 (7분 32초, 검역 13건, 카나리·게이트 통과) — PR #8
 
 브라우저 주소창의 "주의 요함" 표시는 HTTPS가 아니라서 나오는 것입니다(과제용 HTTP 배포).
 
@@ -125,8 +127,8 @@ cd MLOps-project && bash infra/up.sh
 
 ```bash
 # A. CloudShell에서 수동 실행 (어느 브랜치든)
-gh repo set-default <내아이디>/MLOps-project   # fork에서는 처음 한 번 (원본 Minyowa 말고 내 fork 선택)
-gh workflow run ci-cd.yml --ref <브랜치> -f deploy=true
+gh workflow run ci-cd.yml -R <내아이디>/MLOps-project --ref <브랜치> -f deploy=true
+# -R을 빼려면 처음 한 번: gh repo set-default <내아이디>/MLOps-project  (원본 Minyowa 말고 내 fork 선택)
 ```
 - B. `feature/deploy-` 로 시작하는 브랜치나 `main`에 push하면 자동으로 배포됩니다.
 
@@ -136,6 +138,7 @@ gh workflow run ci-cd.yml --ref <브랜치> -f deploy=true
 
 ```bash
 cd ~/MLOps-project && source infra/config.env && mkdir -p logs
+git config --global user.name "<GitHub아이디>"; git config --global user.email "<이메일>"   # CloudShell에서 처음 한 번 (커밋에 필요)
 aws logs filter-log-events --log-group-name "$CW_LOG_GROUP" --output json > logs/cloudwatch.json
 python3 scripts/prepare_feedback.py logs/cloudwatch.json          # → data/feedback/feedback_<날짜>.csv
 git checkout -b feature/retrain-<이름>
@@ -153,7 +156,7 @@ git add data/feedback && git commit -m "data: 신고 데이터" && git push -u o
 |---|---|---|
 | `❌ Actions 배포를 시작하지 못했어요` / `could not find any workflows named ci-cd.yml` | fork에서 Actions가 꺼져 있거나, 기본 브랜치에 워크플로가 없음 | 2번의 3·4단계 (기본 브랜치 `feature/handover`, Actions 사용 버튼) 후 `bash infra/up.sh` 다시 실행 |
 | Actions 탭에 "Get started with GitHub Actions" 화면만 나옴 | 기본 브랜치가 아직 `main` | 2번의 3단계(기본 브랜치 변경)를 먼저 한 뒤 Actions 탭 다시 열기 |
-| 기본 브랜치 변경 시 `Could not change default branch` | GitHub 일시 오류 | 새로고침(F5) 후 다시 시도. 계속 실패하면 CloudShell에서 `gh repo edit <내아이디>/MLOps-project --default-branch feature/handover` |
+| 기본 브랜치 변경 시 `Could not change default branch` | GitHub 일시 오류 | ① 새로고침(F5) 후 다시 시도 ② 계속 실패하면 4번의 `bash infra/up.sh`를 먼저 실행해 gh 설치·로그인이 된 뒤 CloudShell에서 `gh repo edit <내아이디>/MLOps-project --default-branch feature/handover` |
 | 원본 문서·스크립트가 바뀌었는데 내 fork는 그대로 | fork는 자동으로 동기화되지 않음 | 내 fork에서 `feature/handover` 선택 → **Sync fork → Update branch**, CloudShell에서 `git pull` |
 | fork에 `feature/handover` 브랜치가 없음 | fork할 때 "main branch only"가 체크돼 있었음 | fork를 지우고 체크 해제 후 다시 fork (Settings 맨 아래 Delete this repository) |
 | `git push` 할 때 `Username for 'https://github.com'` / `/usr/bin/gh: No such file` | CloudShell이 쉬었다 켜지면 홈 폴더 밖에 설치한 gh가 지워짐 | Ctrl+C 후 `bash infra/up.sh` 다시 실행(자동 설치) 또는 아래 3줄을 한 줄씩:<br>`sudo dnf install -y 'dnf-command(config-manager)'`<br>`sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo`<br>`sudo dnf install -y gh --repo gh-cli` |
@@ -162,7 +165,7 @@ git add data/feedback && git commit -m "data: 신고 데이터" && git push -u o
 | 배포 단계에서 `docker login` / `pull` 권한 오류 | fork의 Actions 토큰 권한이 읽기 전용으로 제한됨 | fork의 Settings → Actions → General → Workflow permissions → **Read and write permissions** → Save |
 | `⚠️ 고정 IP를 쓸 수 없어…` | 계정 권한상 Elastic IP 불가 | 그대로 진행됩니다. 대신 EC2를 새로 만들 때마다 주소가 바뀝니다 |
 | 다음 주에 사이트가 안 열림 | 학교 계정이 매주 EC2를 정리함 | CloudShell에서 `cd ~/MLOps-project && git pull && bash infra/up.sh` (폴더가 없으면 4번부터) |
-| `No default remote repository has been set` (gh workflow run 실행 시) | fork는 원본과 내 저장소가 둘 다 연결돼 있어 gh가 대상을 모름 | `gh repo set-default <내아이디>/MLOps-project` 후 다시 실행 (원본 Minyowa를 고르면 안 됨) |
+| `No default remote repository has been set` (gh workflow run 실행 시) | fork는 원본과 내 저장소가 둘 다 연결돼 있어 gh가 대상을 모름 | 명령에 `-R <내아이디>/MLOps-project`를 붙이거나, `gh repo set-default <내아이디>/MLOps-project` 후 다시 실행 (원본 Minyowa를 고르면 안 됨) |
 | `Please tell me who you are` / `empty ident name` (git commit 시) | CloudShell에 git 사용자 정보가 없음 | `git config --global user.email "<이메일>"`, `git config --global user.name "<아이디>"` 후 커밋 다시 실행 |
 | `src refspec feature/retrain-<이름> does not match any` (git push 시) | `git checkout -b`에 브랜치 이름을 잘못 입력함 (예: 이름이 두 번 들어감) | `git branch`로 현재 이름 확인 → `git branch -m feature/retrain-<이름>`으로 바꾼 뒤 push |
 

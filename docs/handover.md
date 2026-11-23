@@ -118,6 +118,7 @@ cd MLOps-project && bash infra/up.sh
 검증 기록 (2026-11-16, 서울 리전, app `9029866`)
 - cucumbersoap: 이 문서만 보고 fork부터 배포까지 진행, 체크리스트 7/7 통과 (약 10분) — PR #7
 - jyh0729: 배포 + 7번 재학습까지 진행, retrain 성공 (7분 32초, 검역 13건, 카나리·게이트 통과) — PR #8
+- KrJsJin (2026-11-23): 배포 주소 http://43.201.193.95/ 의 `/health` 응답에서 HTTP 200, `status: ok`, 앱 `9406dbd`, 지역 `jp,kr`을 확인했다. 로그 저장소는 `local`, `cloudwatch`로 표시됐고 `log_sinks_failed`는 비어 있었다.
 
 브라우저 주소창의 "주의 요함" 표시는 HTTPS가 아니라서 나오는 것입니다(과제용 HTTP 배포).
 

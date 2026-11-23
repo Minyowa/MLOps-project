@@ -96,6 +96,17 @@ def ui():
     return FileResponse(ROOT / "app" / "static" / "index.html")
 
 
+@app.get("/demo", include_in_schema=False)
+def demo():
+    """발표용 시연 영상 페이지 (주소창에 /demo)"""
+    return FileResponse(ROOT / "app" / "static" / "demo.html")
+
+
+@app.get("/demo.mp4", include_in_schema=False)
+def demo_video():
+    return FileResponse(ROOT / "app" / "static" / "demo.mp4", media_type="video/mp4")
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "app_version": APP_VERSION, "model_version": MODEL_VERSION,

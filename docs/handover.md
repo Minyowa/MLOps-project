@@ -34,6 +34,7 @@ EC2 안: Docker 컨테이너 1개 (웹 화면 + API + 모델) → 로그는 Clou
 ## 2. GitHub: 저장소 fork 하기 (3분)
 
 1. https://github.com/Minyowa/MLOps-project 오른쪽 위 **Fork** 클릭
+   - `No available destinations to fork this repository`와 내 저장소 링크가 보이면 기존 fork를 엽니다. `feature/handover`가 있으면 3단계로, 없으면 아래 8번 표의 브랜치 복구 절차로 이동하세요.
 2. **"Copy the `main` branch only" 체크를 반드시 해제**하고 Create fork
    - 실제 코드는 `main`이 아니라 `feature/handover` 브랜치에 있습니다. 체크된 채로 만들면 빈 저장소가 됩니다.
 3. 내 fork에서 **Settings → General → Default branch** 를 `feature/handover` 로 바꾸기 (⇄ 버튼 → 선택 → Update)
@@ -119,6 +120,7 @@ cd MLOps-project && bash infra/up.sh
 - cucumbersoap: 이 문서만 보고 fork부터 배포까지 진행, 체크리스트 7/7 통과 (약 10분) — PR #7
 - jyh0729: 배포 + 7번 재학습까지 진행, retrain 성공 (7분 32초, 검역 13건, 카나리·게이트 통과) — PR #8
 - KrJsJin (2026-11-23): 배포 주소 http://43.201.193.95/ 의 `/health` 응답에서 HTTP 200, `status: ok`, 앱 `9406dbd`, 지역 `jp,kr`을 확인했다. 로그 저장소는 `local`, `cloudwatch`로 표시됐고 `log_sinks_failed`는 비어 있었다.
+  - `/v1/check`에서 CJ대한통운·야마토운수 사칭 예시 두 건을 위험으로 판정하고 각 공식 주소를 안내했다. 네이버와 야후 재팬 공식 주소는 모두 안전으로 판정했다.
 
 브라우저 주소창의 "주의 요함" 표시는 HTTPS가 아니라서 나오는 것입니다(과제용 HTTP 배포).
 
@@ -159,7 +161,7 @@ git add data/feedback && git commit -m "data: 신고 데이터" && git push -u o
 | Actions 탭에 "Get started with GitHub Actions" 화면만 나옴 | 기본 브랜치가 아직 `main` | 2번의 3단계(기본 브랜치 변경)를 먼저 한 뒤 Actions 탭 다시 열기 |
 | 기본 브랜치 변경 시 `Could not change default branch` | GitHub 일시 오류 | ① 새로고침(F5) 후 다시 시도 ② 계속 실패하면 4번의 `bash infra/up.sh`를 먼저 실행해 gh 설치·로그인이 된 뒤 CloudShell에서 `gh repo edit <내아이디>/MLOps-project --default-branch feature/handover` |
 | 원본 문서·스크립트가 바뀌었는데 내 fork는 그대로 | fork는 자동으로 동기화되지 않음 | 내 fork에서 `feature/handover` 선택 → **Sync fork → Update branch**, CloudShell에서 `git pull` |
-| fork에 `feature/handover` 브랜치가 없음 | fork할 때 "main branch only"가 체크돼 있었음 | fork를 지우고 체크 해제 후 다시 fork (Settings 맨 아래 Delete this repository) |
+| 기존 fork에 `feature/handover`가 없음 | 배포 브랜치가 내 fork에 복사되지 않음 | 내 fork → **Branches → New branch**. 이름에 `feature/handover` 입력 → **Source** 저장소 `Minyowa/MLOps-project`와 원본 브랜치 `feature/handover` 선택 → **Create new branch**. 생성 후 2번의 3·4단계로 돌아갑니다. |
 | `git push` 할 때 `Username for 'https://github.com'` / `/usr/bin/gh: No such file` | CloudShell이 쉬었다 켜지면 홈 폴더 밖에 설치한 gh가 지워짐 | Ctrl+C 후 `bash infra/up.sh` 다시 실행(자동 설치) 또는 아래 3줄을 한 줄씩:<br>`sudo dnf install -y 'dnf-command(config-manager)'`<br>`sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo`<br>`sudo dnf install -y gh --repo gh-cli` |
 | `❌ 실행 중인 EC2(i-…)의 키 파일 … 이 없습니다` | CloudShell 홈이 초기화돼 키 파일이 사라짐 | 안내된 `aws ec2 terminate-instances …` 실행 후 `bash infra/up.sh` 다시 실행 |
 | `/health`의 `log_sinks_failed`에 `cloudwatch` | EC2에 역할이 안 붙음 | `aws ec2 associate-iam-instance-profile --instance-id <ID> --iam-instance-profile Name=yeonsung-ec2-cloudwatch-role` 후 6번 A로 재배포 |

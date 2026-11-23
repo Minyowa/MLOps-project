@@ -34,7 +34,7 @@ def events(path):
 
 def test_health_and_ui():
     h = client.get("/health").json()
-    assert h["status"] == "ok" and h["brand_region"] == "jp" and "app_version" in h
+    assert h["status"] == "ok" and h["brand_region"] == "jp,kr" and "app_version" in h
     assert "LinkGuard" in client.get("/").text
 
 
@@ -113,3 +113,10 @@ def test_reputable_domain_rule(monkeypatch):
     assert "brand_impersonation" in r2["reason_codes"] and "Amazon" in r2["reasons"][0]
     r3 = client.post("/v1/check", json={"url": "https://amazon.co.jp.evil.top/login", "lang": "ko"}).json()
     assert "사칭" in r3["reasons"][0]
+
+
+def test_demo_video_page():
+    r = client.get("/demo")
+    assert r.status_code == 200 and "/demo.mp4" in r.text
+    v = client.get("/demo.mp4", headers={"Range": "bytes=0-1023"})
+    assert v.status_code in (200, 206) and v.headers["content-type"] == "video/mp4"

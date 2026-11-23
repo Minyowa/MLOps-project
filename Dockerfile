@@ -17,7 +17,7 @@ USER appuser
 
 # 어떤 커밋이 배포됐는지 /health와 화면에서 확인 (CI가 --build-arg로 넣음)
 ARG APP_VERSION=dev
-ENV APP_VERSION=${APP_VERSION} LOG_SINKS=local BRAND_REGION=jp
+ENV APP_VERSION=${APP_VERSION} LOG_SINKS=local BRAND_REGION=jp,kr
 
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \

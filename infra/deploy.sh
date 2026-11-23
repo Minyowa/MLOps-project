@@ -24,7 +24,7 @@ if [ ! -d "$APP_DIR/.git" ]; then git clone "$REPO_URL" "$APP_DIR.tmp" && cp -a 
 cd "$APP_DIR"
 git fetch --all --quiet && git checkout --quiet "$SHA"
 mkdir -p logs && sudo chown 10001 logs
-APP_VERSION=$SHA IMAGE=linkguard:$SHA PORT=80 LOG_SINKS=$LOG_SINKS S3_BUCKET=$S3_BUCKET AWS_DEFAULT_REGION=$REGION \
+APP_VERSION=$SHA IMAGE=linkguard:$SHA PORT=80 LOG_SINKS=$LOG_SINKS S3_BUCKET=$S3_BUCKET AWS_DEFAULT_REGION=$REGION CW_LOG_GROUP=$CW_LOG_GROUP \
   docker compose up -d --build
 docker image prune -f >/dev/null
 REMOTE

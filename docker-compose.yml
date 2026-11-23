@@ -15,7 +15,7 @@ services:
       S3_PREFIX: ${S3_PREFIX:-logs/}
       CW_LOG_GROUP: ${CW_LOG_GROUP:-/linkguard/app}
       AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-ap-northeast-1}
-      BRAND_REGION: ${BRAND_REGION:-jp}
+      BRAND_REGION: ${BRAND_REGION:-jp,kr}
     volumes:
       - ./logs:/app/logs          # 로컬 로그(events.jsonl) 보관
     restart: unless-stopped

@@ -10,6 +10,8 @@ name: retrain
 
 on:
   push:
+    # 재학습 결과는 운영 서버에 배포되므로 정해진 브랜치에서만 (리뷰 반영: PR #6)
+    branches: [main, "feature/retrain-*"]
     paths: ["data/feedback/**", "scripts/train.py"]
   workflow_dispatch:
 

@@ -7,7 +7,7 @@
   MODEL_PATH          모델 파일 (기본 models/model.joblib)
   CAUTION / DANGER    위험 확률 기준 (기본 0.3 / 0.7): 미만 '안전', 사이 '주의', 이상 '위험'
   LOG_SINKS           local,cloudwatch,s3 중 선택 (기본 local) — linkguard/logsink.py 참고
-  BRAND_REGION        사칭 판정용 기관 목록 jp / kr (기본 jp)
+  BRAND_REGION        사칭 판정용 기관 목록 jp / kr / jp,kr (기본 jp,kr)
   APP_VERSION         배포된 버전(커밋 SHA 등). CI가 이미지 빌드 시 넣는다 — 배포 확인용
 """
 from __future__ import annotations
@@ -67,7 +67,7 @@ class CheckResponse(BaseModel):
     verdict: Literal["안전", "주의", "위험"]
     label_id: Literal[0, 1] = Field(..., description="1=피싱·악성, 0=정상 (기준 0.5)")
     risk: float = Field(..., description="피싱·악성일 확률")
-    stage: Literal["official_domain", "official_brand", "reputable_domain", "brand_impersonation", "model"]
+    stage: Literal["open_redirect", "official_domain", "official_brand", "reputable_domain", "brand_impersonation", "model"]
     host: str
     brand: str | None = Field(None, description="공식 또는 사칭 의심 기관 이름")
     reasons: list[str]
@@ -94,6 +94,17 @@ def _verdict(risk: float) -> str:
 @app.get("/", include_in_schema=False)
 def ui():
     return FileResponse(ROOT / "app" / "static" / "index.html")
+
+
+@app.get("/demo", include_in_schema=False)
+def demo():
+    """발표용 시연 영상 페이지 (주소창에 /demo)"""
+    return FileResponse(ROOT / "app" / "static" / "demo.html")
+
+
+@app.get("/demo.mp4", include_in_schema=False)
+def demo_video():
+    return FileResponse(ROOT / "app" / "static" / "demo.mp4", media_type="video/mp4")
 
 
 @app.get("/health")
